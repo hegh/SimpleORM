@@ -45,4 +45,8 @@ If you are looking for something to do, search for TODO and FUTURE comments in
 the source and implement the suggestions. Additionally, check for a TODO file
 and for issues on GitHub.
 
+When writing Java code, please conform to the formatter rules in CodeFormat.xml,
+and the import ordering in ImportOrganization.importorder (these are Eclipse
+configuration files). Additionally, please remove all trailing whitespace from
+all lines and use four spaces for each level of indentation; do not use tabs.
 
