@@ -5,8 +5,8 @@ import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.jonp.sorm.LinkMode;
-import net.jonp.sorm.SQLType;
+import net.jonp.sorm.codegen.LinkMode;
+import net.jonp.sorm.codegen.SQLType;
 import net.jonp.sorm.codegen.model.Field;
 import net.jonp.sorm.codegen.model.FieldGetter;
 import net.jonp.sorm.codegen.model.FieldLink;

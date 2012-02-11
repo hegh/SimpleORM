@@ -1,4 +1,4 @@
-package net.jonp.sorm;
+package net.jonp.sorm.codegen;
 
 public enum LinkMode
 {

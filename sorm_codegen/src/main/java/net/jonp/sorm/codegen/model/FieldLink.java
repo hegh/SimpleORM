@@ -1,7 +1,7 @@
 package net.jonp.sorm.codegen.model;
 
-import net.jonp.sorm.LinkMode;
-import net.jonp.sorm.SQLType;
+import net.jonp.sorm.codegen.LinkMode;
+import net.jonp.sorm.codegen.SQLType;
 
 /**
  * Represents a linked value.

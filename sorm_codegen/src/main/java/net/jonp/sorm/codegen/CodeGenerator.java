@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.Date;
 
-import net.jonp.sorm.LinkMode;
 import net.jonp.sorm.codegen.model.Field;
 import net.jonp.sorm.codegen.model.NamedQuery;
 import net.jonp.sorm.codegen.model.Query;

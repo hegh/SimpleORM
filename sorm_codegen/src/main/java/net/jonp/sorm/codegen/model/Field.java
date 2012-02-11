@@ -1,6 +1,6 @@
 package net.jonp.sorm.codegen.model;
 
-import net.jonp.sorm.SQLType;
+import net.jonp.sorm.codegen.SQLType;
 
 /**
  * Represents a Sorm field.
