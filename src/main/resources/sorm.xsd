@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://jonp.net/sorm"
+            xmlns="http://jonp.net/sorm"
+            elementFormDefault="qualified">
+
+
+  
+
+
+
+
+
+
+
+    <xsd:element name="sorm" type="sorm"></xsd:element>
+    
+
+    <xsd:complexType name="sorm">
+      <xsd:sequence>
+        <xsd:element name="field" type="field" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+        <xsd:element name="create" type="create" maxOccurs="1" minOccurs="0"></xsd:element>
+        <xsd:element name="pk" type="pk" maxOccurs="1" minOccurs="0"></xsd:element>
+        <xsd:element name="read" type="read" maxOccurs="1" minOccurs="0"></xsd:element>
+        <xsd:element name="update" type="update" maxOccurs="1" minOccurs="0"></xsd:element>
+        <xsd:element name="delete" type="delete" maxOccurs="1" minOccurs="0"></xsd:element>
+        <xsd:element name="query" type="namedquery" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="pkg" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
+      <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="orm-accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
+    </xsd:complexType>
+    
+    <xsd:complexType name="field">
+      <xsd:sequence>
+        <xsd:element name="get" type="getter" minOccurs="0"
+          maxOccurs="1">
+        </xsd:element>
+        <xsd:element name="set" type="setter" minOccurs="0"
+          maxOccurs="1">
+        </xsd:element>
+        <xsd:element name="link" type="link" minOccurs="0"
+          maxOccurs="1">
+        </xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="accessor" type="xsd:string" use="optional"
+        default="private">
+      </xsd:attribute>
+      <xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+        <xsd:attribute name="primary" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
+        <xsd:attribute name="sql-type" type="xsd:string" use="optional"></xsd:attribute>
+      <xsd:attribute name="sql-column" type="xsd:string"
+        use="optional">
+      </xsd:attribute>
+      <xsd:attribute name="nullable" type="xsd:boolean" use="optional"
+        default="false">
+      </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="getter">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:attribute name="name" type="xsd:string" use="optional"></xsd:attribute>
+          <xsd:attribute name="accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="setter">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:attribute name="name" type="xsd:string" use="optional"></xsd:attribute>
+          <xsd:attribute name="accessor" type="xsd:string" use="optional" fixed="public"></xsd:attribute>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="read">
+      <xsd:sequence>
+        <xsd:element name="r" type="query" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="query">
+      <xsd:simpleContent>
+        <xsd:extension base="xsd:string">
+          <xsd:attribute name="dialect" type="xsd:string" use="optional" default="*"></xsd:attribute>
+        </xsd:extension>
+      </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="create">
+      <xsd:sequence>
+        <xsd:element name="c" type="query" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="update">
+      <xsd:sequence>
+        <xsd:element name="u" type="query" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="delete">
+      <xsd:sequence>
+        <xsd:element name="d" type="query" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+    
+    <xsd:complexType name="pk">
+      <xsd:sequence>
+        <xsd:element name="pk" type="query" minOccurs="1" maxOccurs="unbounded"></xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="collection">
+      <xsd:sequence>
+        <xsd:element name="read" type="read" minOccurs="1" maxOccurs="1"></xsd:element>
+        <xsd:element name="create" type="create" minOccurs="0" maxOccurs="1"></xsd:element>
+        <xsd:element name="delete" type="delete" minOccurs="0" maxOccurs="1"></xsd:element>
+      </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="link">
+      <xsd:sequence>
+        <xsd:element name="collection" type="collection" minOccurs="0"
+          maxOccurs="1">
+        </xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="mode" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="key-type" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="sql-type" type="xsd:string" use="optional"></xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="namedquery">
+      <xsd:sequence>
+        <xsd:element name="param" type="param" minOccurs="0"
+          maxOccurs="unbounded">
+        </xsd:element>
+        <xsd:element name="q" type="query" maxOccurs="unbounded" minOccurs="1"></xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
+      <xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+    </xsd:complexType>
+    
+    <xsd:complexType name="param">
+      <xsd:sequence>
+        <xsd:element name="set" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+      </xsd:sequence>
+      <xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+      <xsd:attribute name="sql-type" type="xsd:string" use="optional"></xsd:attribute>
+    </xsd:complexType>
+</xsd:schema>

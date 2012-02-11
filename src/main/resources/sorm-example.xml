@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- vim:set expandtab shiftwidth=2 softtabstop=2 tabstop=8: -->
+<sorm pkg="net.jonp.sorm.codegen.example"
+      name="Person"
+      xmlns="http://jonp.net/sorm"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://jonp.net/sorm http://jonp.net/sorm/sorm.xsd">
+
+    <field type="Integer" name="id" primary="true" />
+
+    <field type="String" name="name" sql-type="String" />
+
+    <field type="Integer" name="mother" nullable="true">
+        <link mode="ManyToOne" key-type="Integer" type="Person" />
+    </field>
+
+    <field type="Integer" name="father" nullable="true">
+        <link mode="ManyToOne" key-type="Integer" type="Person" />
+    </field>
+
+    <field type="String" name="gender" sql-type="String" sql-column="sex" />
+
+    <field type="java.util.Date" name="dob" sql-type="Date">
+        <get>new java.sql.Date(%{}.getDob().getTime())</get>
+        <set>%{}.setDob(new java.util.Date(%{dob}.getTime()))</set>
+    </field>
+
+    <field type="Integer" name="spouse" nullable="true">
+        <link mode="OneToOne" key-type="Integer" type="Person" />
+    </field>
+
+    <field name="children" type="Collection&lt;Person&gt;">
+        <link mode="OneToMany" key-type="Integer" type="Person">
+            <collection>
+                <read>
+                    <r>
+select id
+  from person
+ where mother = %{id}
+    or father = %{id}
+                    </r>
+                </read>
+            </collection>
+        </link>
+    </field>
+
+    <field name="friends" type="Collection&lt;Person&gt;">
+        <link mode="ManyToMany" key-type="Integer" type="Person">
+            <collection>
+                <read>
+                    <r>
+select person_id2 as id
+  from friendmap
+ where person_id1 = %{id}
+                    </r>
+                </read>
+                <create>
+                    <c>
+insert
+  into friendmap
+  (person_id1, person_id2) values
+  (%{1.id},    %{2.id}),
+  (%{2.id},    %{1.id})
+                    </c>
+                </create>
+                <delete>
+                    <d>
+delete
+  from friendmap
+ where (person_id1 = %{1.id}
+    and person_id2 = %{2.id})
+    or (person_id1 = %{2.id}
+    and person_id2 = %{1.id})
+                    </d>
+                </delete>
+            </collection>
+        </link>
+    </field>
+
+    <create>
+        <c>
+insert into person (name,    mother,    father,    gender,    dob,    spouse)
+            values (%{name}, %{mother}, %{father}, %{gender}, %{dob}, %{spouse})
+        </c>
+    </create>
+
+    <pk>
+        <pk dialect="mysql">
+            select last_insert_id() as id
+        </pk>
+        <pk dialect="postgresql">
+            select curval('person_id_seq') as id
+        </pk>
+        <pk dialect="sqlite">
+            select last_insert_rowid() as id
+        </pk>
+    </pk>
+
+    <read>
+        <r>
+select name,
+       mother,
+       father,
+       gender,
+       dob,
+       spouse
+  from person
+ where id = %{}
+        </r>
+    </read>
+
+    <update>
+        <u>
+update person
+   set name = %{name},
+       mother = %{mother},
+       father = %{father},
+       gender = %{gender},
+       dob = %{dob},
+       spouse = %{spouse}
+ where id = %{id}
+        </u>
+    </update>
+
+    <delete>
+        <d>
+delete
+  from person
+ where id = %{id}
+        </d>
+    </delete>
+
+    <query type="Person" name="getByGender">
+        <param type="String" name="gender" />
+        <q>
+            select id from person where sex = %{gender}
+        </q>
+    </query>
+
+    <query type="Person" name="getByDob">
+        <param type="java.util.Date" name="dob" sql-type="Date">
+            <set>new java.sql.Date(%{}.getTime())</set>
+        </param>
+        <q>
+            select id from person where dob = %{dob}
+        </q>
+    </query>
+</sorm>
