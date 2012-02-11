@@ -45,6 +45,12 @@ If you are looking for something to do, search for TODO and FUTURE comments in
 the source and implement the suggestions. Additionally, check for a TODO file
 and for issues on GitHub.
 
+Additionally, JUnit tests would be a big plus, as would plugins for Maven, Ant,
+and any other popular build systems. Also, exploring corner cases, such as
+what happens if an object has no primary key, or optional various properties are
+not provided for a link. And, of course, documentation, especially of the input
+XML format.
+
 When writing Java code, please conform to the formatter rules in CodeFormat.xml,
 and the import ordering in ImportOrganization.importorder (these are Eclipse
 configuration files). Additionally, please remove all trailing whitespace from
