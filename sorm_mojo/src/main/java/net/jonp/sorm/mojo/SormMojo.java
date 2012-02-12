@@ -41,7 +41,7 @@ public class SormMojo
     /**
      * Source directory in the project containing Sorm sources.
      * 
-     * @parameter default-value="src/main/sorm"
+     * @parameter default-value="${project.basedir}/src/main/sorm"
      */
     private String sourceDirectory;
 
