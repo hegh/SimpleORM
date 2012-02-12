@@ -21,6 +21,7 @@
     <module>sorm_example</module>
     <module>sorm_lib</module>
     <module>sorm_mojo</module>
+    <module>sorm_test</module>
   </modules>
 
   <properties>
