@@ -17,8 +17,9 @@
   <inceptionYear>2011</inceptionYear>
 
   <modules>
-    <module>sorm_lib</module>
     <module>sorm_codegen</module>
+    <module>sorm_lib</module>
+    <module>sorm_mojo</module>
   </modules>
 
   <properties>
