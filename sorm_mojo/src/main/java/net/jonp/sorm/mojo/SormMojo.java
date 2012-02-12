@@ -117,13 +117,14 @@ public class SormMojo
             }
         }
 
-        final File pkgdir = new File(outdir, sorm.getPkg().replaceAll(".", "/"));
+        final File pkgdir = new File(outdir, sorm.getPkg().replaceAll("\\.", "/"));
         pkgdir.mkdirs();
         if (!pkgdir.isDirectory()) {
             throw new MojoExecutionException("Failed to create output directory: " + pkgdir.getAbsolutePath());
         }
 
         final File outfile = new File(pkgdir, sorm.getName() + ".java");
+        getLog().debug("Dumping output from " + file.getAbsolutePath() + " to " + outfile.getAbsolutePath());
 
         final PrintWriter out;
         try {
