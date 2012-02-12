@@ -204,7 +204,13 @@ public class SormContext
     private SormSession makeSession(final CacheMode cacheMode)
         throws SQLException
     {
-        final Connection connection = DriverManager.getConnection(getDialect().getProtocol() + _server, _user, _passwd);
+        final Connection connection;
+        if (null == _user || null == _passwd) {
+            connection = DriverManager.getConnection(getDialect().getProtocol() + _server);
+        }
+        else {
+            connection = DriverManager.getConnection(getDialect().getProtocol() + _server, _user, _passwd);
+        }
         final SormSession session = new SormSession(connection, getDialect().getName(), cacheMode);
         return session;
     }
