@@ -11,6 +11,9 @@ public class Dialect
     /** The dialect of a PostgreSQL database. */
     public static final Dialect PostgreSQL = new Dialect("postgresql", "org.postgresql.Driver", "jdbc:postgresql://");
 
+    /** The dialect of a SQLite database. */
+    public static final Dialect SQLite = new Dialect("sqlite", "org.sqlite.JDBC", "jdbc:sqlite:");
+
     /** The name of this dialect. */
     private final String name;
 

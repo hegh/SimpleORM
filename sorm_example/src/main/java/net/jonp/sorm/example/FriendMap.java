@@ -27,7 +27,7 @@ public class FriendMap
     {
         final boolean needsInit = !new File(DBFILE).isFile();
 
-        final Dialect dialect = new Dialect("sqlite", "org.sqlite.JDBC", "jdbc:sqlite:");
+        final Dialect dialect = Dialect.SQLite;
         final SormContext ctx;
         try {
             ctx = new SormContext(dialect, DBFILE, null, null);
