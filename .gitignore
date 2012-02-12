@@ -5,5 +5,4 @@
 *.jpage
 target/
 *~
-sorm_codegen/src/main/java/net/jonp/sorm/codegen/example/
 
