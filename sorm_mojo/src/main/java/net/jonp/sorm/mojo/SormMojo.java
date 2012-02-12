@@ -55,7 +55,7 @@ public class SormMojo
         throws MojoExecutionException
     {
         // Create output directory
-        final File outdir = new File(project.getBasedir(), "target/sorm/");
+        final File outdir = new File(project.getBasedir(), "target/generated-sources/sorm/");
         getLog().debug("Output root directory: " + outdir.getAbsolutePath());
         outdir.mkdirs();
         if (!outdir.isDirectory()) {
