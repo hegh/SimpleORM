@@ -8,10 +8,10 @@ Objectives:
  2) Emphasize correctness in our code and encourage correctness in users' code.
  3) Be transparent. The user should be able to step into Sorm code and quickly
     understand what is happening. Sorm object descriptions should be easy to
-    understand (to the extend that it is possible).
+    understand (to the extent that it is possible).
 
 Overview:
-The basic project is in two pieces:
+The main project is in two pieces:
  1) The code generator. Takes an XML description of an individual class of an
     object model and converts it into a single Java source file providing
     such an object, with a built-in static inner class for doing ORM
@@ -19,26 +19,30 @@ The basic project is in two pieces:
  2) The library. Used by the code that comes out of the code generator to keep
     accesses simple.
 
+There is also a Maven plugin and an example project used for demonstration and
+testing.
+
 Getting started:
-A good starting point is src/main/resources/sorm-example.xml . This is an
+A good starting point is sorm_example/src/main/sorm/person.xml . This is an
 example XML description of an object model class (a person with parents,
 friends, a spouse, and a few other fields). Demonstrates all five inter-object
 mappings (none, one-to-one, one-to-many, many-to-one, and many-to-many) back to
 itself, as well as conversions between Java types and SQL types (see the DOB
-field).
+field). The example project will be fleshed out over time to include some kind
+of driver code and a database.
 
-Use the class net.jonp.sorm.codegen.app.CodeGenProgram to build an output Java
-source file from the XML. With no arguments, it reads from stdin and writes to
-stdout, but you can get usage information by providing the argument '-h'.
+Use the class net.jonp.sorm.codegen.app.CodeGenProgram in sorm_codegen to build
+an output Java source file from the XML. With no arguments, it reads from stdin
+and writes to stdout, but you can get usage information by providing the
+argument '-h'.
 
-The entire library is in the single pagkage net.jonp.sorm; the sub-pagkages are
-all for code generation.
+The entire library is in the single project sorm_lib.
 
 Using Eclipse:
 From the root project directory, execute "mvn eclipse:eclipse" to build Eclipse
 projects (you need to have Maven 2 installed; see http://maven.apache.org/).
-Then, from Eclipse, import the root project directory into your workspace as an
-existing project.
+Then, from Eclipse, use the import existing projects tool to browse to the root
+project directory. Import all projects that Eclipse finds.
 
 Contributing:
 If you are looking for something to do, search for TODO and FUTURE comments in
