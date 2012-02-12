@@ -18,6 +18,7 @@
 
   <modules>
     <module>sorm_codegen</module>
+    <module>sorm_example</module>
     <module>sorm_lib</module>
     <module>sorm_mojo</module>
   </modules>
