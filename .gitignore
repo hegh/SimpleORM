@@ -5,4 +5,5 @@
 *.jpage
 target/
 *~
+sorm_example/friendmap.db
 
