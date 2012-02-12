@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- vim:set expandtab shiftwidth=2 softtabstop=2 tabstop=8: -->
-<sorm pkg="net.jonp.sorm.codegen.example"
+<sorm pkg="net.jonp.sorm.example"
       name="Person"
       xmlns="http://jonp.net/sorm"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
