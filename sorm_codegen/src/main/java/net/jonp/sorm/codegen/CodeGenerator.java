@@ -95,6 +95,7 @@ public class CodeGenerator
         writeln("import java.sql.PreparedStatement;");
         writeln("import java.sql.ResultSet;");
         writeln("import java.sql.SQLException;");
+        writeln("import java.sql.Types;");
         writeln("import java.util.ArrayList;");
         writeln("import java.util.Arrays;");
         writeln("import java.util.Collection;");
@@ -1011,20 +1012,17 @@ public class CodeGenerator
                     for (final Field field : sorm.getFields()) {
                         if (start.startsWith("%{" + field.getName() + "}")) {
                             final String accessor = compileAccessor(field.getGet().getContent(), objname);
-                            writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
-                            writeln("ps.%s(%d, %s);", field.getSql_type().setter, arg++, accessor);
+                            dumpSet(field, arg++, accessor);
                             wroteSet = true;
                         }
                         else if (start.startsWith("%{1." + field.getName() + "}")) {
                             final String accessor = compileAccessor(field.getGet().getContent(), LHS);
-                            writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
-                            writeln("ps.%s(%d, %s);", field.getSql_type().setter, arg++, accessor);
+                            dumpSet(field, arg++, accessor);
                             wroteSet = true;
                         }
                         else if (start.startsWith("%{2." + field.getName() + "}")) {
                             final String accessor = compileAccessor(field.getGet().getContent(), RHS);
-                            writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
-                            writeln("ps.%s(%d, %s);", field.getSql_type().setter, arg++, accessor);
+                            dumpSet(field, arg++, accessor);
                             wroteSet = true;
                         }
                     }
@@ -1062,6 +1060,8 @@ public class CodeGenerator
                     final String start = query.substring(i);
                     for (final QueryParam param : nq.getParams()) {
                         if (start.startsWith("%{" + param.getName() + "}")) {
+                            // FIXME: Allow for nullable parameters, then use
+                            // something like dumpSet() to test for it
                             final String accessor = compileAccessor(param.getSet().getContent(), param.getName());
                             writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
                             writeln("ps.%s(%d, %s);", param.getSql_type().setter, arg++, accessor);
@@ -1073,6 +1073,33 @@ public class CodeGenerator
         }
 
         return wroteSet;
+    }
+
+    /**
+     * Dump a set block for a single field at a specified Prepared Statement
+     * position.
+     * 
+     * @param field The field.
+     * @param arg The position.
+     * @param accessor The accessor that provides the field value.
+     */
+    private void dumpSet(final Field field, final int arg, final String accessor)
+    {
+        writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
+        if (field.isNullable()) {
+            writeln("if (null == %s)", accessor);
+            writeln("{");
+            writeln("ps.setNull(%d, Types.%s);", arg, field.getSql_type().sqltype);
+            writeln("}");
+            writeln("else");
+            writeln("{");
+        }
+
+        writeln("ps.%s(%d, %s);", field.getSql_type().setter, arg, accessor);
+
+        if (field.isNullable()) {
+            writeln("}");
+        }
     }
 
     private void incIndent()
