@@ -5,4 +5,8 @@ Future enhancements for Sorm:
  * Testing corner cases, such as objects without primary keys, skipping the
    optional properties on links, or providing values for defaulted fields.
  * Flesh out the example project into something useful.
+ * Allow inheritance from existing classes
+   * Fields need to be marked as to which class they come from
+   * Field accessors need to be marked as override/non-override so we can
+     properly generate @Override annotations
 
