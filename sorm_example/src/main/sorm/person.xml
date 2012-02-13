@@ -79,7 +79,7 @@ delete
 
     <create>
         <c>
-insert into person (name,    mother,    father,    gender,    dob,    spouse)
+insert into person (name,    mother,    father,    sex,       dob,    spouse)
             values (%{name}, %{mother}, %{father}, %{gender}, %{dob}, %{spouse})
         </c>
     </create>
@@ -101,7 +101,7 @@ insert into person (name,    mother,    father,    gender,    dob,    spouse)
 select name,
        mother,
        father,
-       gender,
+       sex,
        dob,
        spouse
   from person
@@ -115,7 +115,7 @@ update person
    set name = %{name},
        mother = %{mother},
        father = %{father},
-       gender = %{gender},
+       sex = %{gender},
        dob = %{dob},
        spouse = %{spouse}
  where id = %{id}
