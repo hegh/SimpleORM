@@ -390,7 +390,12 @@ public class CodeGenerator
         for (final Field f : sorm.getFields()) {
             // FUTURE: Figure out a way to avoid requiring the query to
             // return all fields
-            compileFromRS(f, OBJ);
+            if (f == primary) {
+                writeln("%s.%s(%s);", OBJ, primary.getSet().getName(), KEY);
+            }
+            else {
+                compileFromRS(f, OBJ);
+            }
         }
 
         writeln("}");
@@ -1009,21 +1014,27 @@ public class CodeGenerator
                 }
                 else if ('%' == c) {
                     final String start = query.substring(i);
-                    for (final Field field : sorm.getFields()) {
-                        if (start.startsWith("%{" + field.getName() + "}")) {
-                            final String accessor = compileAccessor(field.getGet().getContent(), objname);
-                            dumpSet(field, arg++, accessor);
-                            wroteSet = true;
-                        }
-                        else if (start.startsWith("%{1." + field.getName() + "}")) {
-                            final String accessor = compileAccessor(field.getGet().getContent(), LHS);
-                            dumpSet(field, arg++, accessor);
-                            wroteSet = true;
-                        }
-                        else if (start.startsWith("%{2." + field.getName() + "}")) {
-                            final String accessor = compileAccessor(field.getGet().getContent(), RHS);
-                            dumpSet(field, arg++, accessor);
-                            wroteSet = true;
+                    if (start.startsWith("%{}")) {
+                        dumpSet(sorm.getPrimaryField(), arg++, KEY);
+                        wroteSet = true;
+                    }
+                    else {
+                        for (final Field field : sorm.getFields()) {
+                            if (start.startsWith("%{" + field.getName() + "}")) {
+                                final String accessor = compileAccessor(field.getGet().getContent(), objname);
+                                dumpSet(field, arg++, accessor);
+                                wroteSet = true;
+                            }
+                            else if (start.startsWith("%{1." + field.getName() + "}")) {
+                                final String accessor = compileAccessor(field.getGet().getContent(), LHS);
+                                dumpSet(field, arg++, accessor);
+                                wroteSet = true;
+                            }
+                            else if (start.startsWith("%{2." + field.getName() + "}")) {
+                                final String accessor = compileAccessor(field.getGet().getContent(), RHS);
+                                dumpSet(field, arg++, accessor);
+                                wroteSet = true;
+                            }
                         }
                     }
                 }
