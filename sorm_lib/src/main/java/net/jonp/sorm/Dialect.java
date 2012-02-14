@@ -63,4 +63,30 @@ public class Dialect
     {
         return protocol;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%s[%s](%s)", getName(), getDriver(), getProtocol());
+    }
+
+    @Override
+    public boolean equals(final Object o)
+    {
+        if (null == o) {
+            return false;
+        }
+        else if (o instanceof Dialect) {
+            return toString().equals(o.toString());
+        }
+        else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return toString().hashCode();
+    }
 }
