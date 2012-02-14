@@ -10,6 +10,9 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.jonp.sorm.Dialect;
 import net.jonp.sorm.SormContext;
@@ -25,15 +28,49 @@ public class DBInit
 {
     private static final Logger LOG = Logger.getLogger(DBInit.class);
 
-    private static final String DBFILE = "test.db";
+    private static final Map<Dialect, String> FILEMAP;
+    private static final Map<Dialect, String> SCRIPTMAP;
 
-    public static void delete()
+    static {
+        final Map<Dialect, String> filemap = new HashMap<Dialect, String>();
+        filemap.put(Dialect.H2, "h2_test");
+        filemap.put(Dialect.SQLite, "sqlite_test.db");
+        FILEMAP = Collections.unmodifiableMap(filemap);
+
+        final Map<Dialect, String> scriptmap = new HashMap<Dialect, String>();
+        scriptmap.put(Dialect.H2, "dbinit.h2.sql");
+        scriptmap.put(Dialect.SQLite, "dbinit.sqlite.sql");
+        SCRIPTMAP = Collections.unmodifiableMap(scriptmap);
+    }
+
+    public static void delete(final Dialect dialect)
     {
-        final File dbfile = new File(DBFILE);
-        if (dbfile.isFile()) {
-            if (!dbfile.delete()) {
-                fail("Failed to delete " + DBFILE);
+        if (Dialect.H2 == dialect) {
+            final File dbfile = new File(FILEMAP.get(dialect) + ".h2.db");
+            final File tracefile = new File(FILEMAP.get(dialect) + ".trace.db");
+
+            if (dbfile.isFile()) {
+                if (!dbfile.delete()) {
+                    fail("Failed to delete " + dbfile);
+                }
             }
+
+            if (tracefile.isFile()) {
+                if (!tracefile.delete()) {
+                    fail("Failed to delete " + tracefile);
+                }
+            }
+        }
+        else if (Dialect.SQLite == dialect) {
+            final File dbfile = new File(FILEMAP.get(dialect));
+            if (dbfile.isFile()) {
+                if (!dbfile.delete()) {
+                    fail("Failed to delete " + dbfile);
+                }
+            }
+        }
+        else {
+            throw new IllegalArgumentException("Cannot delete a database of dialect " + dialect);
         }
     }
 
@@ -42,21 +79,21 @@ public class DBInit
      * initialize it. Calls {@link org.junit.Assert#fail(String)} if there is an
      * error.
      * 
+     * @param dialect The dialect of the database to initialize.
      * @return A {@link SormContext} attached to the database.
      */
-    public static SormContext dbinit()
+    public static SormContext dbinit(final Dialect dialect)
     {
-        delete();
+        delete(dialect);
 
-        final File dbfile = new File(DBFILE);
+        final File dbfile = new File(FILEMAP.get(dialect));
         if (dbfile.exists()) {
-            fail("Required object " + DBFILE + " exists but is not a file; refusing to continue.");
+            fail("Required object " + dbfile + " exists but is not a file; refusing to continue.");
         }
 
-        final Dialect dialect = Dialect.SQLite;
         final SormContext ctx;
         try {
-            ctx = new SormContext(dialect, DBFILE, null, null);
+            ctx = new SormContext(dialect, FILEMAP.get(dialect), null, null);
         }
         catch (final ClassNotFoundException cnfe) {
             LOG.error("Failed to load database driver class", cnfe);
@@ -83,7 +120,9 @@ public class DBInit
         throws SQLException, IOException
     {
         final BufferedReader in =
-            new BufferedReader(new InputStreamReader(DBInit.class.getClassLoader().getResourceAsStream("dbinit.sqlite.sql")));
+            new BufferedReader(new InputStreamReader(DBInit.class.getClassLoader().getResourceAsStream(
+                                                                                                       SCRIPTMAP.get(ctx
+                                                                                                           .getDialect()))));
         try {
             final SormSession session = ctx.getTransientSession();
             try {

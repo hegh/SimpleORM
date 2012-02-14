@@ -101,11 +101,14 @@ insert into person (name,    mother,    father,    sex,       dob,    spouse)
     </create>
 
     <pk>
+        <pk dialect="h2">
+            select currval('person_id_seq') as id
+        </pk>
         <pk dialect="mysql">
             select last_insert_id() as id
         </pk>
         <pk dialect="postgresql">
-            select curval('person_id_seq') as id
+            select currval('person_id_seq') as id
         </pk>
         <pk dialect="sqlite">
             select last_insert_rowid() as id
