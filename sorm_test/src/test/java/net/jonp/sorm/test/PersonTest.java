@@ -16,7 +16,7 @@ import net.jonp.sorm.SormSession;
 import net.jonp.sorm.example.Person;
 
 import org.junit.AfterClass;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -24,13 +24,10 @@ import org.junit.Test;
  */
 public class PersonTest
 {
-    private SormContext context;
+    private static SormContext context;
 
-    /**
-     * @throws java.lang.Exception
-     */
-    @Before
-    public void setUp()
+    @BeforeClass
+    public static void setUpClass()
         throws Exception
     {
         context = DBInit.dbinit();
@@ -39,6 +36,7 @@ public class PersonTest
     @AfterClass
     public static void tearDownClass()
     {
+        context.close();
         DBInit.delete();
     }
 
@@ -46,35 +44,23 @@ public class PersonTest
     public void testSingleInsert()
         throws SQLException
     {
-        final SormSession session = context.getTransientSession(CacheMode.None);
-
-        try {
-            testSingleInsertImpl(session);
-        }
-        finally {
-            session.close();
-        }
+        final SormSession session = context.getSession(CacheMode.None);
+        testSingleInsertImpl(session);
     }
 
     @Test
     public void testCachedSingleInsert()
         throws SQLException
     {
-        final SormSession session = context.getTransientSession(CacheMode.Immediate);
+        final SormSession session = context.getSession(CacheMode.Immediate);
+        final Person person = testSingleInsertImpl(session);
 
-        try {
-            final Person person = testSingleInsertImpl(session);
-
-            // XXX: By holding onto a strong reference to the Person in the
-            // cache, this should prevent the garbage collector from clearing it
-            // out
-            // However, it is still possible, since the key in the weak hash map
-            // is a boxed Integer, and may be cleared anyway
-            assertNotNull(session.cacheGet(Person.class, person.getId()));
-        }
-        finally {
-            session.close();
-        }
+        // XXX: By holding onto a strong reference to the Person in the
+        // cache, this should prevent the garbage collector from clearing it
+        // out
+        // However, it is still possible, since the key in the weak hash map
+        // is a boxed Integer, and may be cleared anyway
+        assertNotNull(session.cacheGet(Person.class, person.getId()));
     }
 
     /**
@@ -123,26 +109,20 @@ public class PersonTest
     public void testSingleUpdate()
         throws SQLException
     {
-        final SormSession session = context.getTransientSession(CacheMode.None);
+        final SormSession session = context.getSession(CacheMode.None);
+        final Person person = populate(1)[0];
 
-        try {
-            final Person person = populate(1)[0];
+        final java.sql.Date today = new java.sql.Date(new java.util.Date().getTime());
 
-            final java.sql.Date today = new java.sql.Date(new java.util.Date().getTime());
+        person.setName("newname");
+        person.setGender("trans");
+        person.setDob(today);
+        Person.Orm.update(session, person);
 
-            person.setName("newname");
-            person.setGender("trans");
-            person.setDob(today);
-            Person.Orm.update(session, person);
-
-            final Person test = Person.Orm.read(session, person.getId());
-            assertEquals("newname", test.getName());
-            assertEquals("trans", test.getGender());
-            assertEquals(today, test.getDob());
-        }
-        finally {
-            session.close();
-        }
+        final Person test = Person.Orm.read(session, person.getId());
+        assertEquals("newname", test.getName());
+        assertEquals("trans", test.getGender());
+        assertEquals(today, test.getDob());
     }
 
     @Test
@@ -155,38 +135,26 @@ public class PersonTest
     public void testSingleDelete()
         throws SQLException
     {
-        final SormSession session = context.getTransientSession(CacheMode.None);
+        final SormSession session = context.getSession(CacheMode.None);
+        final Person person = populate(1)[0];
 
-        try {
-            final Person person = populate(1)[0];
+        Person.Orm.delete(session, person);
 
-            Person.Orm.delete(session, person);
-
-            final Person test = Person.Orm.read(session, person.getId());
-            assertNull(test);
-        }
-        finally {
-            session.close();
-        }
+        final Person test = Person.Orm.read(session, person.getId());
+        assertNull(test);
     }
 
     @Test
     public void testMultipleDelete()
         throws SQLException
     {
-        final SormSession session = context.getTransientSession(CacheMode.Immediate);
+        final SormSession session = context.getSession(CacheMode.Immediate);
+        final Person[] people = populate(100);
+        Person.Orm.delete(session, people);
 
-        try {
-            final Person[] people = populate(100);
-            Person.Orm.delete(session, people);
-
-            for (final Person person : people) {
-                final Person test = Person.Orm.read(session, person.getId());
-                assertNull(test);
-            }
-        }
-        finally {
-            session.close();
+        for (final Person person : people) {
+            final Person test = Person.Orm.read(session, person.getId());
+            assertNull(test);
         }
     }
 
