@@ -3,7 +3,6 @@ package net.jonp.sorm.test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -115,10 +114,7 @@ public class PersonTest
 
         Person.Orm.create(session, people);
 
-        final Integer keys[] = new Integer[people.length];
-        for (int i = 0; i < keys.length; i++) {
-            keys[i] = people[i].getId();
-        }
+        final Integer[] keys = getKeys(people);
 
         final Collection<Person> testCollection = Person.Orm.read(session, keys);
         final Person test[] = testCollection.toArray(new Person[testCollection.size()]);
@@ -150,8 +146,28 @@ public class PersonTest
 
     @Test
     public void testMultipleUpdate()
+        throws SQLException
     {
-        fail("Not implemented");
+        final SormSession session = context.getSession(CacheMode.None);
+        final Person[] people = populate(100);
+
+        final java.util.Date today = getDayCalendar().getTime();
+
+        for (final Person person : people) {
+            person.setName("Test");
+            person.setGender("trans");
+            person.setDob(today);
+        }
+
+        Person.Orm.update(session, people);
+
+        final Integer[] keys = getKeys(people);
+        final Collection<Person> testCollection = Person.Orm.read(session, keys);
+        final Person test[] = testCollection.toArray(new Person[testCollection.size()]);
+
+        for (int i = 0; i < people.length; i++) {
+            assertPersonEquals(people[i], test[i]);
+        }
     }
 
     @Test
@@ -297,6 +313,16 @@ public class PersonTest
         daycal.set(Calendar.MILLISECOND, 0);
 
         return daycal;
+    }
+
+    private Integer[] getKeys(final Person[] people)
+    {
+        final Integer keys[] = new Integer[people.length];
+        for (int i = 0; i < keys.length; i++) {
+            keys[i] = people[i].getId();
+        }
+
+        return keys;
     }
 
     private void assertPersonEquals(final Person expected, final Person actual)

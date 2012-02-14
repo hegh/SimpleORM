@@ -1,5 +1,5 @@
 Future enhancements for Sorm:
- * Junit tests.
+ * Junit tests. More are always better.
  * Plugins for other build systems.
  * Documentation, especially of the input XML format.
  * Testing corner cases, such as objects without primary keys, skipping the
