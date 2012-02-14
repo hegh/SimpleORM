@@ -91,7 +91,7 @@ public class SormContext
         }
 
         SormSession session = _session.get();
-        if (null != session && session.getCacheMode() != cacheMode) {
+        if (null != session && null != cacheMode && session.getCacheMode() != cacheMode) {
             session.close();
             session = null;
         }
