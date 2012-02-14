@@ -48,14 +48,30 @@ select id
         <link mode="ManyToMany" key-type="Integer" type="Person">
             <collection>
                 <read>
-                    <r>
+                    <r dialect="sqlite">
+<!-- SQLite does not support multiple-insert, so it pays for that in longer selects -->
+select person_id2 as id
+  from friendmap
+ where person_id1 = %{id}
+ union person_id1
+  from friendmap
+ where person_id2 = %{id}
+                    </r>
+                    <r dialect="*">
 select person_id2 as id
   from friendmap
  where person_id1 = %{id}
                     </r>
                 </read>
                 <create>
-                    <c>
+                    <c dialect="sqlite">
+<!-- SQLite only keeps a single pair because it does not support multiple-insert -->
+insert
+  into friendmap
+  (person_id1, person_id2) values
+  (%{1.id},    %{2.id})
+                    </c>
+                    <c dialect="*">
 insert
   into friendmap
   (person_id1, person_id2) values
