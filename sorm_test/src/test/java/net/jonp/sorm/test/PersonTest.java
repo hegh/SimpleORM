@@ -11,6 +11,7 @@ import net.jonp.sorm.SormContext;
 import net.jonp.sorm.SormSession;
 import net.jonp.sorm.example.Person;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,6 +30,12 @@ public class PersonTest
         throws Exception
     {
         context = DBInit.dbinit();
+    }
+
+    @AfterClass
+    public static void tearDownClass()
+    {
+        DBInit.delete();
     }
 
     @Test

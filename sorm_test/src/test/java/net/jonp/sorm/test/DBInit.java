@@ -25,7 +25,17 @@ public class DBInit
 {
     private static final Logger LOG = Logger.getLogger(DBInit.class);
 
-    private static final String DBFILE = "friendmap.db";
+    private static final String DBFILE = "test.db";
+
+    public static void delete()
+    {
+        final File dbfile = new File(DBFILE);
+        if (dbfile.isFile()) {
+            if (!dbfile.delete()) {
+                fail("Failed to delete " + DBFILE);
+            }
+        }
+    }
 
     /**
      * Create a new database (deleting an existing database if one exists), and
@@ -36,13 +46,10 @@ public class DBInit
      */
     public static SormContext dbinit()
     {
+        delete();
+
         final File dbfile = new File(DBFILE);
-        if (dbfile.isFile()) {
-            if (!dbfile.delete()) {
-                fail("Failed to delete " + DBFILE);
-            }
-        }
-        else if (dbfile.exists()) {
+        if (dbfile.exists()) {
             fail("Required object " + DBFILE + " exists but is not a file; refusing to continue.");
         }
 
