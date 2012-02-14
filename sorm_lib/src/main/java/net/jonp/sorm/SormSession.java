@@ -139,7 +139,7 @@ public class SormSession
             return null;
         }
 
-        final WeakReference<Object> ref = typemap.get(type);
+        final WeakReference<Object> ref = typemap.get(key);
         if (null == ref) {
             return null;
         }
