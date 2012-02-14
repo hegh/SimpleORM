@@ -5,6 +5,9 @@ package net.jonp.sorm;
  */
 public class Dialect
 {
+    /** The dialect of an H2 database. */
+    public static final Dialect H2 = new Dialect("h2", "org.h2.Driver", "jdbc:h2:");
+
     /** The dialect of a MySQL database. */
     public static final Dialect MySQL = new Dialect("mysql", "com.mysql.jdbc.Driver", "jdbc:mysql://");
 
