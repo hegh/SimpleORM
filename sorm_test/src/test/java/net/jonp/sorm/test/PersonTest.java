@@ -151,7 +151,7 @@ public class PersonTest
                 objs[i - 1].setSpouse(objs[i - 0].getId());
                 objs[i - 0].setSpouse(objs[i - 1].getId());
             }
-            else {
+            else if (i % 4 == 3) {
                 objs[i - 1].setFather(objs[i - 3].getId());
                 objs[i - 1].setMother(objs[i - 2].getId());
                 objs[i - 0].setFather(objs[i - 3].getId());
