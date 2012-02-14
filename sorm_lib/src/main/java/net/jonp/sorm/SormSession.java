@@ -12,8 +12,8 @@ import java.util.WeakHashMap;
  */
 public class SormSession
 {
+    private final SormContext _context;
     private final Connection _connection;
-    private final String _dialect;
 
     // Used for Immediate CacheMode; map of object class onto a map of
     // identifier onto object
@@ -27,10 +27,10 @@ public class SormSession
 
     private boolean _closed = false;
 
-    protected SormSession(final Connection connection, final String dialect, final CacheMode cacheMode)
+    protected SormSession(final SormContext context, final Connection connection, final CacheMode cacheMode)
     {
+        _context = context;
         _connection = connection;
-        _dialect = dialect;
         _cacheMode = cacheMode;
 
         // TODO: CacheMode.Delayed is not yet supported
@@ -39,30 +39,49 @@ public class SormSession
         }
     }
 
+    /** Get the {@link SormContext} that spawned this {@link SormSession}. */
+    public SormContext getContext()
+    {
+        return _context;
+    }
+
+    /** Get the {@link Connection} wrapped by this {@link SormSession}. */
     public Connection getConnection()
     {
         return _connection;
     }
 
+    /**
+     * Get the name of the dialect of this {@link SormSession}. To get the
+     * actual {@link Dialect}, use {@link #getContext()} and
+     * {@link SormContext#getDialect()}.
+     */
     public String getDialect()
     {
-        return _dialect;
+        return getContext().getDialect().getName();
     }
 
+    /** Get the {@link CacheMode} of this {@link SormSession}. */
     public CacheMode getCacheMode()
     {
         return _cacheMode;
     }
 
+    /** Test whether this {@link SormSession} is closed. */
     public boolean isClosed()
     {
         return _closed;
     }
 
+    /**
+     * Close this {@link SormSession}. If it is already closed, does nothing. If
+     * it is a per-thread session in the {@link SormContext}, it is disposed.
+     */
     public void close()
         throws SQLException
     {
         if (!isClosed()) {
+            getContext().killSession(this);
             getConnection().close();
             _weakCache.clear();
             _closed = true;

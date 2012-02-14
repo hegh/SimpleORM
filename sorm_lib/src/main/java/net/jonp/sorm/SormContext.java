@@ -63,13 +63,16 @@ public class SormContext
     }
 
     /**
-     * Wrapper around {@link #getSession(CacheMode)} with
-     * {@link CacheMode#Immediate}.
+     * If there is a current {@link SormSession} for this thread, get it. If
+     * not, create a new {@link SormSession} with {@link CacheMode#Immediate}.
+     * 
+     * @return The {@link SormSession}.
+     * @throws SQLException If there was a problem creating a new connection.
      */
     public SormSession getSession()
         throws SQLException
     {
-        return getSession(CacheMode.Immediate);
+        return getSession(null);
     }
 
     /**
@@ -119,13 +122,8 @@ public class SormContext
 
         if (null != session) {
             LOG.info("Disposing of session due to thread request");
-            _session.remove();
-
-            synchronized (_sessions) {
-                _sessions.remove(Thread.currentThread());
-            }
-
             try {
+                // This calls killSession(), so we don't need to do that
                 session.close();
             }
             catch (final SQLException sqle) {
@@ -194,6 +192,23 @@ public class SormContext
     }
 
     /**
+     * Called by {@link SormSession#close()} to clear the thread-specific
+     * session when it is closed.
+     * 
+     * @param session The {@link SormSession} being closed.
+     */
+    void killSession(final SormSession session)
+    {
+        if (_session.get() == session) {
+            _session.remove();
+
+            synchronized (_sessions) {
+                _sessions.remove(Thread.currentThread());
+            }
+        }
+    }
+
+    /**
      * Construct a new connection to the database and return a
      * {@link SormSession} wrapped around it.
      * 
@@ -211,7 +226,7 @@ public class SormContext
         else {
             connection = DriverManager.getConnection(getDialect().getProtocol() + _server, _user, _passwd);
         }
-        final SormSession session = new SormSession(connection, getDialect().getName(), cacheMode);
+        final SormSession session = new SormSession(this, connection, cacheMode);
         return session;
     }
 }
