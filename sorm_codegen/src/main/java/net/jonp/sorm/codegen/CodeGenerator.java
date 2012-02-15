@@ -786,23 +786,27 @@ public class CodeGenerator
                 writeln();
             }
 
-            if (field.getGet().isOverride()) {
-                writeln("@Override");
+            if (!field.getGet().isFromSuper()) {
+                if (field.getGet().isOverride()) {
+                    writeln("@Override");
+                }
+                writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
+                writeln("{");
+                writeln("return _%s;", field.getName());
+                writeln("}");
+                writeln();
             }
-            writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
-            writeln("{");
-            writeln("return _%s;", field.getName());
-            writeln("}");
-            writeln();
 
-            if (field.getSet().isOverride()) {
-                writeln("@Override");
+            if (!field.getSet().isFromSuper()) {
+                if (field.getSet().isOverride()) {
+                    writeln("@Override");
+                }
+                writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(), field
+                    .getName());
+                writeln("{");
+                writeln("_%s = %s;", field.getName(), field.getName());
+                writeln("}");
             }
-            writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(), field
-                .getName());
-            writeln("{");
-            writeln("_%s = %s;", field.getName(), field.getName());
-            writeln("}");
 
             // TODO: Dump special accessors for linked fields (adders/removers,
             // lazy-access types)

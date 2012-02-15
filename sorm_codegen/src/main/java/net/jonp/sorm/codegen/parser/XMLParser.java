@@ -117,6 +117,7 @@ public class XMLParser
             getter.setAccessor(eGetter.getAttributeValue("accessor", getter.getAccessor()));
             getter.setName(eGetter.getAttributeValue("name", getter.getName()));
             getter.setOverride(checkBoolean(eGetter.getAttributeValue("override"), getter.isOverride()));
+            getter.setFromSuper(checkBoolean(eGetter.getAttributeValue("from-super"), getter.isFromSuper()));
 
             getter.setContent(eGetter.getTextTrim());
         }
@@ -130,6 +131,7 @@ public class XMLParser
             setter.setAccessor(eSetter.getAttributeValue("accessor", setter.getAccessor()));
             setter.setName(eSetter.getAttributeValue("name", setter.getName()));
             setter.setOverride(checkBoolean(eSetter.getAttributeValue("override"), setter.isOverride()));
+            setter.setFromSuper(checkBoolean(eSetter.getAttributeValue("from-super"), setter.isFromSuper()));
 
             setter.setContent(eSetter.getTextTrim());
         }

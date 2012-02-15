@@ -11,6 +11,7 @@ public class FieldSetter
     private String accessor = "public";
     private String name; // Default returned by getter
     private boolean override = false;
+    private boolean fromSuper = false;
 
     private String content; // Default returned by getter
 
@@ -51,6 +52,16 @@ public class FieldSetter
     public void setOverride(final boolean override)
     {
         this.override = override;
+    }
+
+    public boolean isFromSuper()
+    {
+        return fromSuper;
+    }
+
+    public void setFromSuper(final boolean fromSuper)
+    {
+        this.fromSuper = fromSuper;
     }
 
     public String getContent()

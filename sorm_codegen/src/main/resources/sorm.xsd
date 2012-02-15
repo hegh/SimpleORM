@@ -84,7 +84,10 @@
           <xsd:attribute name="accessor" type="xsd:string"
             use="optional" default="public">
           </xsd:attribute>
-          <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
+          <xsd:attribute name="override" type="xsd:boolean"
+            use="optional" default="false">
+          </xsd:attribute>
+          <xsd:attribute name="use-super" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
         </xsd:extension>
       </xsd:simpleContent>
     </xsd:complexType>
@@ -95,7 +98,10 @@
           <xsd:attribute name="accessor" type="xsd:string"
             use="optional" fixed="public">
           </xsd:attribute>
-          <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
+          <xsd:attribute name="override" type="xsd:boolean"
+            use="optional" default="false">
+          </xsd:attribute>
+          <xsd:attribute name="use-super" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
         </xsd:extension>
       </xsd:simpleContent>
     </xsd:complexType>
