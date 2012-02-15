@@ -10,6 +10,8 @@ public class FieldGetter
     private final Field field;
     private String accessor = "public";
     private String name; // Default returned by getter
+    private boolean override = false;
+
     private String content; // Default returned by getter
 
     public FieldGetter(final Field _field)
@@ -41,9 +43,19 @@ public class FieldGetter
         this.name = name;
     }
 
+    public boolean isOverride()
+    {
+        return override;
+    }
+
+    public void setOverride(final boolean override)
+    {
+        this.override = override;
+    }
+
     public String getContent()
     {
-        if (null == content && null != getName()) {
+        if ((null == content || content.isEmpty()) && null != getName()) {
             return String.format("%%{}.%s()", getName());
         }
 

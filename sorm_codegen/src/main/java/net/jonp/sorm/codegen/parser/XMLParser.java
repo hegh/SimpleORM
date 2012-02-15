@@ -50,6 +50,7 @@ public class XMLParser
         sorm.setAccessor(eRoot.getAttributeValue("accessor", sorm.getAccessor()));
         sorm.setName(eRoot.getAttributeValue("name", sorm.getName()));
         sorm.setOrm_accessor(eRoot.getAttributeValue("orm_accessor", sorm.getOrm_accessor()));
+        sorm.setSuper(eRoot.getAttributeValue("super", sorm.getSuper()));
 
         sorm.getFields().addAll(readFields(eRoot, ns));
         readQuery(eRoot, ns, sorm.getCreate(), "create", "c");
@@ -94,6 +95,7 @@ public class XMLParser
             field.setSql_type(findSQLType(eField.getAttributeValue("sql-type"), field.getSql_type()));
             field.setSql_column(eField.getAttributeValue("sql-column", field.getSql_column()));
             field.setNullable(checkBoolean(eField.getAttributeValue("nullable"), field.isNullable()));
+            field.setFromSuper(checkBoolean(eField.getAttributeValue("from-super"), field.isFromSuper()));
 
             LOG.debug("Reading field " + field.getName());
 
@@ -114,6 +116,8 @@ public class XMLParser
         if (null != eGetter) {
             getter.setAccessor(eGetter.getAttributeValue("accessor", getter.getAccessor()));
             getter.setName(eGetter.getAttributeValue("name", getter.getName()));
+            getter.setOverride(checkBoolean(eGetter.getAttributeValue("override"), getter.isOverride()));
+
             getter.setContent(eGetter.getTextTrim());
         }
     }
@@ -125,6 +129,8 @@ public class XMLParser
         if (null != eSetter) {
             setter.setAccessor(eSetter.getAttributeValue("accessor", setter.getAccessor()));
             setter.setName(eSetter.getAttributeValue("name", setter.getName()));
+            setter.setOverride(checkBoolean(eSetter.getAttributeValue("override"), setter.isOverride()));
+
             setter.setContent(eSetter.getTextTrim());
         }
     }

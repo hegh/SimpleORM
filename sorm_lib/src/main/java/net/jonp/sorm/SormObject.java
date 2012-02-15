@@ -1,9 +1,9 @@
 package net.jonp.sorm;
 
 /**
- * Supertype of all Sorm model objects.
+ * Super-interface of all Sorm model objects.
  */
-public abstract class SormObject
+public interface SormObject
 {
     // No actual content
 }

@@ -13,6 +13,7 @@ public class Sorm
     private String accessor = "public";
     private String name;
     private String orm_accessor = "public";
+    private String superClass = null;
 
     private final List<Field> fields = new LinkedList<Field>();
     private final Query create = new Query();
@@ -65,6 +66,16 @@ public class Sorm
     public void setOrm_accessor(final String ormAccessor)
     {
         orm_accessor = ormAccessor;
+    }
+
+    public String getSuper()
+    {
+        return superClass;
+    }
+
+    public void setSuper(final String superClass)
+    {
+        this.superClass = superClass;
     }
 
     public List<Field> getFields()

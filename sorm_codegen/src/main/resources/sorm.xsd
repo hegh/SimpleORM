@@ -18,20 +18,36 @@
 
     <xsd:complexType name="sorm">
       <xsd:sequence>
-        <xsd:element name="field" type="field" maxOccurs="unbounded" minOccurs="1"></xsd:element>
-        <xsd:element name="create" type="create" maxOccurs="1" minOccurs="0"></xsd:element>
+        <xsd:element name="field" type="field" maxOccurs="unbounded"
+          minOccurs="1">
+        </xsd:element>
+        <xsd:element name="create" type="create" maxOccurs="1"
+          minOccurs="0">
+        </xsd:element>
         <xsd:element name="pk" type="pk" maxOccurs="1" minOccurs="0"></xsd:element>
-        <xsd:element name="read" type="read" maxOccurs="1" minOccurs="0"></xsd:element>
-        <xsd:element name="update" type="update" maxOccurs="1" minOccurs="0"></xsd:element>
-        <xsd:element name="delete" type="delete" maxOccurs="1" minOccurs="0"></xsd:element>
-        <xsd:element name="query" type="namedquery" maxOccurs="unbounded" minOccurs="0"></xsd:element>
+        <xsd:element name="read" type="read" maxOccurs="1"
+          minOccurs="0">
+        </xsd:element>
+        <xsd:element name="update" type="update" maxOccurs="1"
+          minOccurs="0">
+        </xsd:element>
+        <xsd:element name="delete" type="delete" maxOccurs="1"
+          minOccurs="0">
+        </xsd:element>
+        <xsd:element name="query" type="namedquery"
+          maxOccurs="unbounded" minOccurs="0">
+        </xsd:element>
       </xsd:sequence>
       <xsd:attribute name="pkg" type="xsd:string" use="required"></xsd:attribute>
-      <xsd:attribute name="accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
+      <xsd:attribute name="accessor" type="xsd:string" use="optional"
+        default="public">
+      </xsd:attribute>
       <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
-      <xsd:attribute name="orm-accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
+      <xsd:attribute name="orm-accessor" type="xsd:string"
+        use="optional" default="public">
+      </xsd:attribute>
+      <xsd:attribute name="super" type="xsd:string" use="optional"></xsd:attribute>
     </xsd:complexType>
-    
     <xsd:complexType name="field">
       <xsd:sequence>
         <xsd:element name="get" type="getter" minOccurs="0"
@@ -49,35 +65,40 @@
       </xsd:attribute>
       <xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
       <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
-        <xsd:attribute name="primary" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
-        <xsd:attribute name="sql-type" type="xsd:string" use="optional"></xsd:attribute>
+      <xsd:attribute name="primary" type="xsd:boolean" use="optional"
+        default="false">
+      </xsd:attribute>
+      <xsd:attribute name="sql-type" type="xsd:string" use="optional"></xsd:attribute>
       <xsd:attribute name="sql-column" type="xsd:string"
         use="optional">
       </xsd:attribute>
       <xsd:attribute name="nullable" type="xsd:boolean" use="optional"
         default="false">
       </xsd:attribute>
+      <xsd:attribute name="from-super" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
     </xsd:complexType>
-
     <xsd:complexType name="getter">
       <xsd:simpleContent>
         <xsd:extension base="xsd:string">
           <xsd:attribute name="name" type="xsd:string" use="optional"></xsd:attribute>
-          <xsd:attribute name="accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
+          <xsd:attribute name="accessor" type="xsd:string"
+            use="optional" default="public">
+          </xsd:attribute>
+          <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
         </xsd:extension>
       </xsd:simpleContent>
     </xsd:complexType>
-
     <xsd:complexType name="setter">
       <xsd:simpleContent>
         <xsd:extension base="xsd:string">
           <xsd:attribute name="name" type="xsd:string" use="optional"></xsd:attribute>
-          <xsd:attribute name="accessor" type="xsd:string" use="optional" fixed="public"></xsd:attribute>
+          <xsd:attribute name="accessor" type="xsd:string"
+            use="optional" fixed="public">
+          </xsd:attribute>
+          <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
         </xsd:extension>
       </xsd:simpleContent>
     </xsd:complexType>
-
-
     <xsd:complexType name="read">
       <xsd:sequence>
         <xsd:element name="r" type="query" minOccurs="1" maxOccurs="unbounded"></xsd:element>

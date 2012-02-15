@@ -14,6 +14,8 @@ public class Field
     private SQLType sql_type; // Default returned by getter
     private String sql_column; // Default returned by getter
     private boolean nullable = false;
+    private boolean from_super = false;
+
     private final FieldGetter get = new FieldGetter(this);
     private final FieldSetter set = new FieldSetter(this);
     private final FieldLink link = new FieldLink(this);
@@ -104,6 +106,16 @@ public class Field
     public void setNullable(final boolean nullable)
     {
         this.nullable = nullable;
+    }
+
+    public boolean isFromSuper()
+    {
+        return from_super;
+    }
+
+    public void setFromSuper(final boolean fromSuper)
+    {
+        from_super = fromSuper;
     }
 
     public FieldGetter getGet()

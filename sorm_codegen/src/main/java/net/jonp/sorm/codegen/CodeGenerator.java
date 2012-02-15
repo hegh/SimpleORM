@@ -119,7 +119,10 @@ public class CodeGenerator
         writeln();
 
         writeln("%s class %s", sorm.getAccessor(), sorm.getName());
-        writeln("extends SormObject");
+        if (null != sorm.getSuper()) {
+            writeln("extends %s", sorm.getSuper());
+        }
+        writeln("implements SormObject");
         writeln("{");
         dumpOrm();
         writeln();
@@ -760,6 +763,10 @@ public class CodeGenerator
     private void dumpFields()
     {
         for (final Field field : sorm.getFields()) {
+            if (field.isFromSuper()) {
+                continue;
+            }
+
             writeln("%s %s _%s;", field.getAccessor(), field.getType(), field.getName());
         }
     }
@@ -768,6 +775,10 @@ public class CodeGenerator
     {
         boolean first = true;
         for (final Field field : sorm.getFields()) {
+            if (field.isFromSuper()) {
+                continue;
+            }
+
             if (first) {
                 first = false;
             }
@@ -775,11 +786,18 @@ public class CodeGenerator
                 writeln();
             }
 
+            if (field.getGet().isOverride()) {
+                writeln("@Override");
+            }
             writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
             writeln("{");
             writeln("return _%s;", field.getName());
             writeln("}");
             writeln();
+
+            if (field.getSet().isOverride()) {
+                writeln("@Override");
+            }
             writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(), field
                 .getName());
             writeln("{");
