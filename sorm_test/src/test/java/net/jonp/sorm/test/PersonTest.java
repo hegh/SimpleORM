@@ -1,5 +1,6 @@
 package net.jonp.sorm.test;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -14,7 +15,6 @@ import net.jonp.sorm.CacheMode;
 import net.jonp.sorm.Dialect;
 import net.jonp.sorm.SormContext;
 import net.jonp.sorm.SormSession;
-import net.jonp.sorm.example.Person;
 
 import org.junit.AfterClass;
 import org.junit.Test;
@@ -100,7 +100,7 @@ public class PersonTest
 
         final Person test = Person.Orm.read(session, person.getId());
 
-        assertPersonEquals(person, test);
+        assertEquals(person, test);
 
         return person;
     }
@@ -119,9 +119,7 @@ public class PersonTest
         final Collection<Person> testCollection = Person.Orm.read(session, keys);
         final Person test[] = testCollection.toArray(new Person[testCollection.size()]);
 
-        for (int i = 0; i < people.length; i++) {
-            assertPersonEquals(people[i], test[i]);
-        }
+        assertArrayEquals(people, test);
     }
 
     @Test
@@ -165,9 +163,7 @@ public class PersonTest
         final Collection<Person> testCollection = Person.Orm.read(session, keys);
         final Person test[] = testCollection.toArray(new Person[testCollection.size()]);
 
-        for (int i = 0; i < people.length; i++) {
-            assertPersonEquals(people[i], test[i]);
-        }
+        assertArrayEquals(people, test);
     }
 
     @Test
@@ -323,12 +319,5 @@ public class PersonTest
         }
 
         return keys;
-    }
-
-    private void assertPersonEquals(final Person expected, final Person actual)
-    {
-        assertEquals(expected.getName(), actual.getName());
-        assertEquals(expected.getGender(), actual.getGender());
-        assertEquals(expected.getDob(), actual.getDob());
     }
 }

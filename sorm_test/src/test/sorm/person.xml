@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- vim:set expandtab shiftwidth=2 softtabstop=2 tabstop=8: -->
-<sorm pkg="net.jonp.sorm.example"
+<sorm pkg="net.jonp.sorm.test"
       name="Person"
+      super="net.jonp.sorm.test.PersonSuper"
       xmlns="http://jonp.net/sorm"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://jonp.net/sorm http://jonp.net/sorm/sorm.xsd">
 
     <field type="Integer" name="id" primary="true" />
 
-    <field type="String" name="name" sql-type="String" />
+    <field type="String" name="name" sql-type="String">
+        <get override="true" />
+    </field>
 
     <field type="Integer" name="mother" nullable="true">
         <link mode="ManyToOne" key-type="Integer" type="Person" />
@@ -18,10 +21,12 @@
         <link mode="ManyToOne" key-type="Integer" type="Person" />
     </field>
 
-    <field type="String" name="gender" sql-type="String" sql-column="sex" />
+    <field type="String" name="gender" sql-type="String" sql-column="sex">
+        <get override="true" />
+    </field>
 
     <field type="java.util.Date" name="dob" sql-type="Date">
-        <get>new java.sql.Date(%{}.getDob().getTime())</get>
+        <get override="true">new java.sql.Date(%{}.getDob().getTime())</get>
         <set>%{}.setDob(new java.util.Date(%{dob}.getTime()))</set>
     </field>
 

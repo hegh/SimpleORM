@@ -46,9 +46,6 @@
       <plugin>
         <groupId>net.jonp</groupId>
         <artifactId>sorm-maven-plugin</artifactId>
-        <configuration>
-          <sourceDirectory>${project.basedir}/src/test/sorm/</sourceDirectory>
-        </configuration>
         <executions>
           <execution>
             <goals>
