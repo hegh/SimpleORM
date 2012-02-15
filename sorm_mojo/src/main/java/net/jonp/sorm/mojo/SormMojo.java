@@ -45,6 +45,14 @@ public class SormMojo
      */
     private String sourceDirectory;
 
+    /**
+     * Source directory is for test sources (not normal sources). Affects what
+     * is available during compilation.
+     * 
+     * @parameter default-value="${project.basedir}/src/test/sorm"
+     */
+    private String testDirectory;
+
     /** XML parser used for input file processing. */
     private final XMLParser xmlParser = new XMLParser();
 
@@ -54,16 +62,44 @@ public class SormMojo
     public void execute()
         throws MojoExecutionException
     {
-        // Create output directory
-        final File outdir = new File(project.getBasedir(), "target/generated-sources/sorm/");
-        getLog().debug("Output root directory: " + outdir.getAbsolutePath());
-        outdir.mkdirs();
-        if (!outdir.isDirectory()) {
-            throw new MojoExecutionException("Failed to create output root directory: " + outdir.getAbsolutePath());
+        final File sourceDir = new File(sourceDirectory);
+        if (sourceDir.isDirectory()) {
+            getLog().info("Sorm source directory: " + sourceDir.getPath());
+            final File outdir = new File(project.getBasedir(), "target/generated-sources/sorm/");
+            if (codegen(sourceDir, outdir) > 0) {
+                // Add the output directory as a compilable source root
+                // directory
+                project.addCompileSourceRoot(outdir.getPath());
+            }
+        }
+        else {
+            getLog().warn("No Sorm source directory found at: " + sourceDir.getAbsolutePath());
+        }
+
+        final File testDir = new File(testDirectory);
+        if (testDir.isDirectory()) {
+            getLog().info("Sorm test source directory: " + testDir.getPath());
+            final File outdir = new File(project.getBasedir(), "target/generated-sources/sorm-test/");
+            if (codegen(testDir, outdir) > 0) {
+                project.addTestCompileSourceRoot(outdir.getPath());
+            }
+        }
+        else {
+            getLog().info("No Sorm test source directory found at: " + testDir.getAbsolutePath());
+        }
+    }
+
+    private int codegen(final File from, final File to)
+        throws MojoExecutionException
+    {
+        getLog().debug("Output root directory: " + to.getAbsolutePath());
+        to.mkdirs();
+        if (!to.isDirectory()) {
+            throw new MojoExecutionException("Failed to create output root directory: " + to.getAbsolutePath());
         }
 
         // Grab all of the XML files
-        final Collection<File> inputFiles = locateInputFiles();
+        final Collection<File> inputFiles = locateInputFiles(from);
         getLog().debug("Located " + inputFiles.size() + " input XML files");
 
         if (inputFiles.isEmpty()) {
@@ -72,12 +108,11 @@ public class SormMojo
         else {
             // Process each file
             for (final File file : inputFiles) {
-                process(outdir, file);
+                process(to, file);
             }
-
-            // Add the output directory as a compilable source root directory
-            project.addCompileSourceRoot(outdir.getPath());
         }
+
+        return inputFiles.size();
     }
 
     public void process(final File outdir, final File file)
@@ -153,10 +188,9 @@ public class SormMojo
         }
     }
 
-    private Collection<File> locateInputFiles()
+    private Collection<File> locateInputFiles(final File root)
         throws MojoExecutionException
     {
-        final File root = new File(sourceDirectory);
         if (!root.isDirectory()) {
             return Collections.emptyList();
         }
