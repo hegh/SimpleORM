@@ -6,4 +6,8 @@
 target/
 *~
 sorm_example/friendmap.db
+*.aux
+*.log
+*.pdf
+*.toc
 
