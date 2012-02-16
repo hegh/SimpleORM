@@ -1,0 +1,310 @@
+\documentclass{book}
+\author{Jonathan Pearson}
+\title{Sorm Developers' Manual}
+\begin{document}
+
+\tableofcontents
+
+\chapter{Overview}
+Sorm is a combination code generator and library to provide a straightforward,
+transparent mapping between a relational database and Java code. It provides a
+similar function as Hibernate or myBatis, but aims for a more direct,
+transparent interface.
+
+\section{Introduction}
+I created Sorm because I was dissatisfied with existing ORM layers. Hibernate
+was too complex and thick, and felt like it was trying to make the database
+invisible. It has its own SQL dialect and uses code weaving, with I distrust.
+I also tried myBatis, but could not get the code generator to work.
+
+With Sorm I wanted to make configuration and usage easy. I discovered while
+writing the code generator that it is virtually impossible to make the
+configuration easy (there are simply too many necessary options), but I still
+tried to make it as simple as possible. The code generator is likewise simple,
+acting as a simple compiler with only input/output file options (and working
+with stdin/stdout by default).
+
+\section{Overview}
+Sorm is in two pieces, a code generator and a library.
+
+The code generator is used during project setup/compilation to create Java
+source files representing the objects of your data model that you want to be
+persisted in a database.
+
+The library is used by your code and the generated code to manage database
+connections and an optional object cache.
+
+
+\chapter{Configuration}
+Configuration is through XML files, one per data object that you want to define.
+
+\section{Input File Reference}
+This is the layout of the file, with all available options described:
+
+Top-level: sorm
+\begin{enumerate}
+    \item @pkg [String, Required] The name of the Java package that will contain
+          the generated class. Use dot (.) as the separator character.
+    \item @accessor [String, Optional, Default ``public''] The accessor for the
+          class (public or empty).
+    \item @name [String, Required] The name of the generated class.
+    \item @orm-accessor [String, Optional, Default ``public''] The accessor for
+          the generated ``Orm'' static inner-class.
+    \item @super [String, Optional, Default null] The full name of the
+          superclass of the generated class, including the package. Use dot (.)
+          as the separator character.
+    \item field[1..*] Describe the fields of the generated class.
+    \begin{enumerate}
+        \item @accessor [String, Optional, Default ``private''] The accessor for
+              the field (public, protected, empty for default, or private).
+        \item @type [String, Required] The Java type of the field. If using a
+              class outside of java.lang, make sure to provide the full name,
+              including the package.
+        \item @name [String, Required] The name of the field.
+        \item @primary [Boolean, Optional, Default ``false''] Whether this is
+              the primary identifier for the object in the database. Exactly one
+              primary field is required, and only one is supported.
+        \item @sql-type [String, Optional, Default @type] The type of the field.
+              Must be the name of one of the enum constants in
+              net.jonp.sorm.codegen.SQLType.
+        \item @sql-column [String, Optional, Default @name] The name of the
+              column in the database.
+        \item @nullable [Boolean, Optional, Default false] Whether the
+              field/column accepts null values.
+        \item @from-super [Boolean, Optional, Default false] Whether the field
+              actually exists on the superclass and should not be part of the
+              generated class. If true, no field declaration or accessors will
+              be emitted, but the field will be accessible through SQL
+              statements.
+        \item get[0..1] Describes both the getter for this field, and the way to
+              convert from the field type to the SQL type.
+        \begin{enumerate}
+            \item @name [String, Optional, Default ``get[Field name]''] The name
+                  for the getter. The default capitalizes the first letter of
+                  the field name and prefixes it with ``get''.
+            \item @accessor [String, Optional, Default ``public''] The accessor
+                  of the getter function.
+            \item @override [Boolean, Optional, Default ``false''] Whether to
+                  include an ``@Override'' annotation on the generated getter
+                  function.
+            \item @super [Boolean, Optional, Default ``false''] Whether this
+                  getter is actually implemented on the superclass. If true,
+                  no getter function is emmitted for the generated class.
+            \item (Text) [String, Optional, Default ``\%\{\}.get[Field name]()'']
+                  An optional conversion from the field getter to the SQL type
+                  for the column. The object being accessed may be referenced
+                  as ``\%\{\}''. For example, if your field is a java.util.Date,
+                  but your SQL column is a java.sql.Timestamp, your getter text
+                  should probably be something like
+                  ``new java.sql.Timestamp(\%\{\}.getDate().getTime())''.
+        \end{enumerate}
+        \item set[0..1] Describes both the setter for this field, and the way to
+              convert from the SQL type to the field type.
+        \begin{enumerate}
+            \item @name [String, Optional, Default ``set[Field name]''] The name
+                  for the setter. The default capitalizes the first letter of
+                  the field name and prefixes it with ``set''.
+            \item @accessor [String, Optional, Default ``public''] The accessor
+                  of the setter function.
+            \item @override [Boolean, Optional, Default ``false''] Whether to
+                  include an ``@Override'' annotation on the generated setter
+                  function.
+            \item @super [Boolean, Optional, Default ``false''] Whether this
+                  setter is actually implemented on the superclass. If true,
+                  no setter function is emmitted for the generated class.
+            \item (Text) [String, Optional, Default
+                  ``\%\{\}.set[Field name](\%\{[Field name]\})''] An optional
+                  conversion from the SQL type for the column to the type
+                  accepted by the setter. The object being accessed may be
+                  referenced as ``\%\{\}'', and fields from the SQL may be
+                  referenced as ``\%\{fieldName\}''. For example, if your field
+                  is a java.util.Date, but your SQL column is a
+                  java.sql.Timestamp, your setter text should probably be
+                  something like
+                  ``\%\{\}.setDate(new java.util.Date(\%\{date\}.getTime()))''.
+        \end{enumerate}
+        \item link[0..1] If this is a linked/mapped type, describes the link.
+        \begin{enumerate}
+            \item @mode [String, Required] The type of link. One of ``None'',
+                  ``OneToOne'', ``OneToMany'', ``ManyToOne'', or ``ManyToMany''.
+            \begin{itemize}
+                \item None means this is not a linked type. There is no
+                reason to specify a link element with a link type of None
+                for a field.
+                \item OneToOne means that this object contains a reference
+                to another object, and that the other object contains a
+                reference to this object. The field must be nullable in
+                this case (otherwise how would you construct the pair? One
+                of them must be created before the other, and the field
+                would need to be null in the time between).
+                \item OneToMany means that this object contains a
+                collection of the linked objects. This is generally
+                implemented by referencing this object in the table
+                containing the other objects. A collection subelement
+                must be present in this case.
+                \item ManyToOne describes the opposite side of a OneToMany
+                linkage, but otherwise acts like a OneToOne relationship;
+                this object contains a single reference to another type.
+                \item ManyToMany describes a type of mapping in which a
+                separate table is used to pair objects of two types,
+                with one row (or sometimes two) used to designate each
+                mapping. In the two row case, each of the two rows has
+                the same pair in the opposite order, when the two objects
+                being mapped are of the same type. A collection subelement must
+                be present in this case. Fields with this type of linkage will
+                emit two additional Orm functions named ``map[Fieldname]'' and
+                ``unmap[Fieldname]]'', which create and remove mappings,
+                respectively.
+            \end{itemize}
+            \item @key-type [String, Required] The Java type of the key used to
+                  match objects of the linked type. Likely the type of the
+                  primary key of the object.
+            \item @type [String, Required] The Java type of the linked object.
+            \item @sql-type [String, Optional, Default @key-type] The SQL type
+                  of the key. The name of an enum from
+                  net.jonp.sorm.codegen.SQLType.
+            \item collection[0..1] Describes the linked collection for *ToMany
+                  linkages.
+            \begin{enumerate}
+                \item read[1..1] Describes how to read the collection of linked
+                      objects.
+                \begin{itemize}
+                    \item r[1..*] The SQL query used to read the collection for
+                          a specific SQL dialect.
+                    \begin{itemize}
+                        \item @dialect [String, Optional, Default ``*''] The
+                              name of the dialect for this query.
+                        \item (Text) The SQL query used to read the collection.
+                              Must return at least a single column named ``id'',
+                              although any additional columns will be ignored.
+                              Fields may be referenced as ``\%\{fieldName\}''.
+                    \end{itemize}
+                \end{itemize}
+                \item create[0..1] Only necessary for ManyToMany linkages.
+                      Describes how to add a new mapping to the database.
+                \begin{itemize}
+                    \item c[1..*] Describes how to add a new mapping for a
+                          specific SQL dialect.
+                    \begin{itemize}
+                        \item @dialect [String, Optional, Default ``*''] The
+                              name of the dialect for this statement.
+                        \item (Text) The SQL query used to create a new linkage.
+                              Fields on this object may be referenced as
+                              ``\%\{1.fieldName\}'', and fields on the object
+                              being linked to this object may be referenced as
+                              ``\%\{2.fieldName\}''.
+                    \end{itemize}
+                \end{itemize}
+                \item delete[0..1] Only necessary for ManyToMany linkages.
+                      Describes how to remove a mapping from the database.
+                \begin{itemize}
+                    \item d[1..*] Describes how to remove a mapping for a
+                          specific SQL dialect.
+                    \begin{itemize}
+                        \item @dialect [String, Optional, Default ``*''] The
+                              name of the dialect for this statement.
+                        \item (Text) The SQL query used to remove the linkage.
+                              Fields on this object may be referenced as
+                              ``\%\{1.fieldName\}'', and fields on the linked
+                              object may be referenced as ``\%\{2.fieldName\}''.
+                    \end{itemize}
+                \end{itemize}
+            \end{enumerate}
+        \end{enumerate}
+    \end{enumerate}
+    \item create[0..1] Describes how to insert a new one of these objects into
+          the database.
+    \begin{enumerate}
+        \item c[1..*] Describes the insert command for a specific SQL dialect.
+        \begin{enumerate}
+            \item @dialect [String, Optional, Default ``*''] The name of the
+                  dialect for this statement.
+            \item (Text) The SQL query used to insert the object into the
+                  database. Fields may be referenced as ``\%\{fieldName\}'', but
+                  remember that the ID has not been set yet.
+        \end{enumerate}
+    \end{enumerate}
+    \item pk[0..1] Describes how to retrieve the ID of the last object inserted
+          into the database.
+    \begin{enumerate}
+        \item pk[1..*] Describes the query for a specific SQL dialect.
+        \begin{enumerate}
+            \item @dialect [String, Optional, Default ``*''] The name of the
+                  dialect for this statement.
+            \item (Text) The SQL query used to retrieve the last inserted ID.
+                  Must return at least one column named ``id''; other columns
+                  will be ignored. Fields may be referenced as
+                  ``\%\{fieldName\}'', but remember that the ID has not been set
+                  yet.
+        \end{enumerate}
+    \end{enumerate}
+    \item read[0..1] Describes how to read an object out of the database, given
+          its ID.
+    \begin{enumerate}
+        \item r[1..*] Describes the read query for a specific SQL dialect.
+            \begin{enumerate}
+            \item @dialect [String, Optional, Default ``*''] The name of the
+                  dialect for this query.
+            \item (Text) The SQL query used to retrieve the object. Must return
+                  one column for each field defined for the object, named by the
+                  ``sql-column'' parameter for that field. The key value may be
+                  referenced by ``\%\{\}'' in the SQL query.
+        \end{enumerate}
+    \end{enumerate}
+    \item update[0..1] Describes how to update an object in the database.
+    \begin{enumerate}
+        \item u[1..*] Describes the query for a specific SQL dialect.
+        \begin{enumerate}
+            \item @dialect [String, Optional, Default ``*''] The name of the
+                  dialect for this statement.
+            \item (Text) The SQL statement used to update the given object.
+                  Fields may be referenced as ``\%\{fieldName\}''.
+        \end{enumerate}
+    \end{enumerate}
+    \item delete[0..1] Describe how to delete an object in the database.
+    \begin{enumerate}
+        \item d[1..*] Describes how to delete an object for a specific dialect.
+        \begin{enumerate}
+            \item @dialect [String, Optional, Default ``*''] The name of the
+              dialect for this query.
+            \item (Text) The SQL statement used to delete the given object.
+                  Fields may be referenced as ``\%\{fieldName\}''.
+        \end{enumerate}
+    \end{enumerate}
+    \item query[0..*] Describes named queries on the database. These each emit
+          a single function which reads keys for the generated object out of
+          the database.
+    \begin{enumerate}
+        \item @accessor [String, Optional, Default ``public''] The accessor for
+              the function that implements this query.
+        \item @name The name of the getter function that implements this query.
+        \item param[0..*] Descriptions of the parameters of the function that
+              implements this query.
+        \begin{enumerate}
+            \item @type The Java type of this parameter.
+            \item @name The name of this parameter.
+            \item @sql-type The SQL type of this parameter.
+            \item set[0..1] Describes how to convert the Java parameter to the
+                  SQL value used in the query.
+            \begin{enumerate}
+                \item (Text) How to convert the Java parameter to the SQL value.
+                      The parameter may be referenced as ``\%\{\}''. For
+                      example, an input parameter of java.util.Date could be
+                      converted to a SQL value of java.sql.Timestamp with
+                      ``new java.sql.Timestamp(\%\{\}.getTime())''.
+            \end{enumerate}
+        \end{enumerate}
+        \item q[1..*] Describes how to query value for the specific dialect.
+        \begin{enumerate}
+            \item @dialect [String, Optional, Default ``*''] The name of the
+                  dialect for this query.
+            \item (Text) The query to retrieve keys matching the parameters.
+                  Parameters may be referenced as ``\%\{parameterName\}''. Must
+                  return at least a column named ``id''. Other returned will be
+                  ignored.
+        \end{enumerate}
+    \end{enumerate}
+\end{enumerate}
+
+\end{document}
+
