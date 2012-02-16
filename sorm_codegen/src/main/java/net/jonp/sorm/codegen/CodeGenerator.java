@@ -397,6 +397,8 @@ public class CodeGenerator
                 writeln("%s.%s(%s);", OBJ, primary.getSet().getName(), KEY);
             }
             else {
+                // TODO: Test whether this field was returned by the query
+                // before trying to read it
                 compileFromRS(f, OBJ);
             }
         }
