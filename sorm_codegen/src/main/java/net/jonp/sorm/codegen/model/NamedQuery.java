@@ -9,7 +9,6 @@ import java.util.List;
 public class NamedQuery
 {
     private String accessor = "public";
-    private String type;
     private String name;
     private final List<QueryParam> params = new LinkedList<QueryParam>();
     private final Query query = new Query();
@@ -27,16 +26,6 @@ public class NamedQuery
     public void setAccessor(final String accessor)
     {
         this.accessor = accessor;
-    }
-
-    public String getType()
-    {
-        return type;
-    }
-
-    public void setType(final String type)
-    {
-        this.type = type;
     }
 
     public String getName()

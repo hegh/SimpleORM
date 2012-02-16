@@ -243,7 +243,6 @@ public class XMLParser
     {
         final NamedQuery query = new NamedQuery();
         query.setAccessor(eQuery.getAttributeValue("accessor", query.getAccessor()));
-        query.setType(eQuery.getAttributeValue("type", query.getType()));
         query.setName(eQuery.getAttributeValue("name", query.getName()));
 
         for (final Object o : eQuery.getChildren("param", ns)) {

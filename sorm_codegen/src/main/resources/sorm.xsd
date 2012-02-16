@@ -171,7 +171,6 @@
         <xsd:element name="q" type="query" maxOccurs="unbounded" minOccurs="1"></xsd:element>
       </xsd:sequence>
       <xsd:attribute name="accessor" type="xsd:string" use="optional" default="public"></xsd:attribute>
-      <xsd:attribute name="type" type="xsd:string" use="required"></xsd:attribute>
       <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
     </xsd:complexType>
     
