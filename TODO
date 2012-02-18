@@ -5,7 +5,3 @@ Future enhancements for Sorm:
  * Testing corner cases, such as objects without primary keys, skipping the
    optional properties on links, or providing values for defaulted fields.
  * Flesh out the example project into something useful.
- * Take a CLOSE look at ManyToMany linkages. Accessing fields like %{2.x} may
-   not work because we do not know the field definition. May need to
-   specifically reference an actual Java getter.
-

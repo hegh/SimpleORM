@@ -192,7 +192,14 @@ Top-level: sorm
                               Fields on this object may be referenced as
                               ``\%\{1.fieldName\}'', and fields on the object
                               being linked to this object may be referenced as
-                              ``\%\{2.fieldName\}''.
+                              ``\%\{2.getFunction():[nullable ]type\}'', where
+                              the type is the name of one of the enum constants
+                              in net.jonp.sorm.codegen.SQLType, and the presense
+                              of the ``nullable'' keyword indicates that the
+                              getter may return null and the column may be null.
+                              For example, ``\%\{2.getId():Integer\}'' will use
+                              the Integer function ``getId()'' on the linked
+                              object when building the statement.
                     \end{itemize}
                 \end{itemize}
                 \item delete[0..1] Only necessary for ManyToMany linkages.
@@ -206,7 +213,9 @@ Top-level: sorm
                         \item (Text) The SQL query used to remove the linkage.
                               Fields on this object may be referenced as
                               ``\%\{1.fieldName\}'', and fields on the linked
-                              object may be referenced as ``\%\{2.fieldName\}''.
+                              object may be referenced as
+                              ``\%\{2.getFunction():[nullable ]type\}''. See
+                              the create element above for how this works.
                     \end{itemize}
                 \end{itemize}
             \end{enumerate}

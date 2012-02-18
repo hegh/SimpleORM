@@ -4,6 +4,8 @@ import java.io.PrintWriter;
 import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.Date;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.jonp.sorm.codegen.model.Field;
 import net.jonp.sorm.codegen.model.NamedQuery;
@@ -23,6 +25,9 @@ public class CodeGenerator
     private static final String RHS = "rhs";
 
     private static final String INDENT = "    ";
+
+    private static final Pattern P_RHSMAP = Pattern.compile("^%\\{2\\.(\\w|_)((?:\\w|\\d)*)\\(\\):(nullable )?(\\w+)\\}.*",
+                                                            Pattern.DOTALL);
 
     private PrintWriter out;
     private Sorm sorm;
@@ -80,6 +85,7 @@ public class CodeGenerator
         }
     }
 
+    @Override
     public void run()
     {
         writeln("/*");
@@ -286,8 +292,8 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
-        writeln("public static Collection<%s> read(final SormSession session, final Collection<%s> %ss)", sorm.getName(), primary
-            .getType(), KEY);
+        writeln("public static Collection<%s> read(final SormSession session, final Collection<%s> %ss)", sorm.getName(),
+                primary.getType(), KEY);
         writeln("throws SQLException");
         writeln("{");
 
@@ -673,8 +679,8 @@ public class CodeGenerator
 
     private void dumpOrmMapCreate(final Field field)
     {
-        writeln("public static void map%s(final SormSession session, final %s %s, final %s %s)", StringUtil.capFirst(field
-            .getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
+        writeln("public static void map%s(final SormSession session, final %s %s, final %s %s)",
+                StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
         writeln("{");
 
@@ -698,8 +704,8 @@ public class CodeGenerator
 
     private void dumpOrmMapDelete(final Field field)
     {
-        writeln("public static void unmap%s(final SormSession session, final %s %s, final %s %s)", StringUtil.capFirst(field
-            .getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
+        writeln("public static void unmap%s(final SormSession session, final %s %s, final %s %s)",
+                StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
         writeln("{");
 
@@ -726,8 +732,8 @@ public class CodeGenerator
         final Field primary = sorm.getPrimaryField();
 
         final StringBuilder buf = new StringBuilder();
-        buf.append(String.format("%s static Collection<%s> %s(final SormSession session", nq.getAccessor(), primary.getType(), nq
-            .getName()));
+        buf.append(String.format("%s static Collection<%s> %s(final SormSession session", nq.getAccessor(), primary.getType(),
+                                 nq.getName()));
         for (final QueryParam param : nq.getParams()) {
             buf.append(String.format(", final %s %s", param.getType(), param.getName()));
         }
@@ -803,8 +809,8 @@ public class CodeGenerator
                 if (field.getSet().isOverride()) {
                     writeln("@Override");
                 }
-                writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(), field
-                    .getName());
+                writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(),
+                        field.getName());
                 writeln("{");
                 writeln("_%s = %s;", field.getName(), field.getName());
                 writeln("}");
@@ -979,8 +985,10 @@ public class CodeGenerator
         for (final Field field : sorm.getFields()) {
             query = query.replaceAll("%\\{" + field.getName() + "\\}", "?");
             query = query.replaceAll("%\\{1\\." + field.getName() + "\\}", "?");
-            query = query.replaceAll("%\\{2\\." + field.getName() + "\\}", "?");
         }
+
+        // Search for %{2.*} references
+        query = query.replaceAll("%\\{2\\..*?:.*?\\}", "?");
 
         // Fix embedded newlines
         query = query.replaceAll("\r?\n", String.format("\\\\n\" +%n" + indentString + "\""));
@@ -1042,6 +1050,25 @@ public class CodeGenerator
                         dumpSet(sorm.getPrimaryField(), arg++, KEY);
                         wroteSet = true;
                     }
+                    else if (start.startsWith("%{2.")) {
+                        final Matcher matcher = P_RHSMAP.matcher(start);
+                        if (matcher.matches()) {
+                            final String function = matcher.group(1) + matcher.group(2);
+                            final boolean nullable = null == matcher.group(3) ? false : matcher.group(3).equals("nullable ");
+                            final String type = matcher.group(4);
+
+                            // Create a temporary field so we can use
+                            // compileAccessor() and dumpSet()
+                            final Field field = new Field();
+                            field.getGet().setName(function);
+                            field.setNullable(nullable);
+                            field.setSql_type(SQLType.valueOf(type));
+
+                            final String accessor = compileAccessor(field.getGet().getContent(), RHS);
+                            dumpSet(field, arg++, accessor);
+                            wroteSet = true;
+                        }
+                    }
                     else {
                         for (final Field field : sorm.getFields()) {
                             if (start.startsWith("%{" + field.getName() + "}")) {
@@ -1051,11 +1078,6 @@ public class CodeGenerator
                             }
                             else if (start.startsWith("%{1." + field.getName() + "}")) {
                                 final String accessor = compileAccessor(field.getGet().getContent(), LHS);
-                                dumpSet(field, arg++, accessor);
-                                wroteSet = true;
-                            }
-                            else if (start.startsWith("%{2." + field.getName() + "}")) {
-                                final String accessor = compileAccessor(field.getGet().getContent(), RHS);
                                 dumpSet(field, arg++, accessor);
                                 wroteSet = true;
                             }
