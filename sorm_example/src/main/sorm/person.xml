@@ -53,7 +53,8 @@ select id
 select person_id2 as id
   from friendmap
  where person_id1 = %{id}
- union person_id1
+union
+select person_id1
   from friendmap
  where person_id2 = %{id}
                     </r>
