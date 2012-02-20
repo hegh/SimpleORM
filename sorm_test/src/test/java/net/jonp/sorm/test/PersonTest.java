@@ -4,9 +4,11 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,6 +16,8 @@ import java.util.HashSet;
 import net.jonp.sorm.CacheMode;
 import net.jonp.sorm.Dialect;
 import net.jonp.sorm.SormContext;
+import net.jonp.sorm.SormIterable;
+import net.jonp.sorm.SormIterator;
 import net.jonp.sorm.SormSession;
 
 import org.junit.AfterClass;
@@ -123,6 +127,37 @@ public class PersonTest
     }
 
     @Test
+    public void testIterator()
+        throws SQLException
+    {
+        // We will be testing both cached and non-cached reads by removing some
+        // elements from the cache
+        final SormSession session = context.getSession(CacheMode.Immediate);
+        final Person[] people = buildSimpleObjects(100);
+
+        Person.Orm.create(session, people);
+
+        // Evict every other element from the cache
+        for (int i = 0; i < people.length; i += 2) {
+            session.cacheDel(Person.class, people[i]);
+        }
+
+        final Integer[] keys = getKeys(people);
+        final SormIterable<Person> iterable = Person.Orm.matches(session, Arrays.asList(keys));
+        final SormIterator<Person> iterator = iterable.iterator();
+        try {
+            int i = 0;
+            while (iterator.hasNext()) {
+                final Person person = iterator.next();
+                assertEquals(people[i++], person);
+            }
+        }
+        finally {
+            iterator.close();
+        }
+    }
+
+    @Test
     public void testSingleUpdate()
         throws SQLException
     {
@@ -190,6 +225,43 @@ public class PersonTest
         for (final Person person : people) {
             final Person test = Person.Orm.read(session, person.getId());
             assertNull(test);
+        }
+    }
+
+    @Test
+    public void testMapUnmap()
+        throws SQLException
+    {
+        final SormSession session = context.getSession(CacheMode.Immediate);
+        final Person[] friends = buildSimpleObjects(4);
+        Person.Orm.create(session, friends);
+
+        for (int i = 0; i < friends.length; i++) {
+            friends[i].setFriends(new HashSet<Person>());
+        }
+
+        for (int i = 0; i < friends.length; i++) {
+            for (int j = i + 1; j < friends.length; j++) {
+                friends[i].getFriends().add(friends[j]);
+                friends[j].getFriends().add(friends[i]);
+                Person.Orm.mapFriends(session, friends[i], friends[j]);
+            }
+        }
+
+        final Integer[] keys = getKeys(friends);
+        final Collection<Person> collection = Person.Orm.read(session, keys);
+        assertEquals(friends.length, collection.size());
+
+        final Person[] people = collection.toArray(new Person[collection.size()]);
+        for (final Person person : people) {
+            person.setFriends(new HashSet<Person>(Person.Orm.readMappedFriends(session, person)));
+        }
+
+        assertArrayEquals(friends, people);
+
+        for (int i = 0; i < friends.length; i++) {
+            assertTrue(friends[i].getFriends().containsAll(people[i].getFriends()));
+            assertTrue(people[i].getFriends().containsAll(friends[i].getFriends()));
         }
     }
 
