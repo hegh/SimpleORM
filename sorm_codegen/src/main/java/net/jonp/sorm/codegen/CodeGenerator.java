@@ -95,6 +95,7 @@ public class CodeGenerator
         writeln(" * Generated on %1$tF at %1$tT", new Date());
         writeln(" */");
         writeln();
+
         writeln("package %s;", sorm.getPkg());
         writeln();
 
@@ -112,6 +113,7 @@ public class CodeGenerator
         writeln("import java.util.NoSuchElementException;");
         writeln();
 
+        writeln("import net.jonp.sorm.SormBase;");
         writeln("import net.jonp.sorm.SormIterable;");
         writeln("import net.jonp.sorm.SormIterator;");
         writeln("import net.jonp.sorm.SormObject;");
@@ -148,14 +150,17 @@ public class CodeGenerator
 
     private void dumpOrm()
     {
+        final Field primary = sorm.getPrimaryField();
+
         writeln("%s static class Orm", sorm.getOrm_accessor());
+        writeln("extends SormBase<%s, %s>", primary.getType(), sorm.getName());
         writeln("{");
         writeln("static final Logger LOG = Logger.getLogger(Orm.class);");
         writeln();
 
-        writeln("private Orm()");
+        writeln("public Orm(final SormSession session)");
         writeln("{");
-        writeln("// Nothing to do");
+        writeln("super(session);");
         writeln("}");
 
         if (!sorm.getCreate().isEmpty()) {
@@ -209,10 +214,26 @@ public class CodeGenerator
 
     private void dumpOrmCreate()
     {
+        writeln("@Override");
+        writeln("public void create(final %s... %ss)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("create(getSession(), %ss);", OBJ);
+        writeln("}");
+        writeln();
+
         writeln("public static void create(final SormSession session, final %s... %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
         writeln("create(session, Arrays.asList(%ss));", OBJ);
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public void create(final Collection<%s> %ss)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("create(getSession(), %ss);", OBJ);
         writeln("}");
         writeln();
 
@@ -223,6 +244,14 @@ public class CodeGenerator
         writeln("{");
         writeln("create(session, %s);", OBJ);
         writeln("}");
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public void create(final %s %s)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("create(getSession(), %s);", OBJ);
         writeln("}");
         writeln();
 
@@ -284,11 +313,27 @@ public class CodeGenerator
     {
         final Field primary = sorm.getPrimaryField();
 
+        writeln("@Override");
+        writeln("public Collection<%s> read(final %s... %ss)", sorm.getName(), primary.getType(), KEY);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("return read(getSession(), %ss);", KEY);
+        writeln("}");
+        writeln();
+
         writeln("public static Collection<%s> read(final SormSession session, final %s... %ss)", sorm.getName(), primary.getType(),
                 KEY);
         writeln("throws SQLException");
         writeln("{");
         writeln("return read(session, Arrays.asList(%ss));", KEY);
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public Collection<%s> read(final Collection<%s> %ss)", sorm.getName(), primary.getType(), KEY);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("return read(getSession(), %ss);", KEY);
         writeln("}");
         writeln();
 
@@ -346,6 +391,14 @@ public class CodeGenerator
         writeln("}");
         writeln();
         writeln("return %ss;", OBJ);
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public %s read(final %s %s)", sorm.getName(), primary.getType(), KEY);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("return read(getSession(), %s);", KEY);
         writeln("}");
         writeln();
 
@@ -418,6 +471,13 @@ public class CodeGenerator
         writeln("{");
         writeln("rs.close();");
         writeln("}");
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public SormIterable<%s> matches(final Collection<%s> %ss)", sorm.getName(), primary.getType(), KEY);
+        writeln("{");
+        writeln("return matches(getSession(), %ss);", KEY);
         writeln("}");
         writeln();
 
@@ -516,10 +576,26 @@ public class CodeGenerator
 
     private void dumpOrmUpdate()
     {
+        writeln("@Override");
+        writeln("public void update(final %s... %ss)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("update(getSession(), %ss);", OBJ);
+        writeln("}");
+        writeln();
+
         writeln("public static void update(final SormSession session, final %s... %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
         writeln("update(session, Arrays.asList(%ss));", OBJ);
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public void update(final Collection<%s> %ss)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("update(getSession(), %ss);", OBJ);
         writeln("}");
         writeln();
 
@@ -542,6 +618,14 @@ public class CodeGenerator
         writeln("{");
         writeln("ps.close();");
         writeln("}");
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public void update(final %s %s)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("update(getSession(), %s);", OBJ);
         writeln("}");
         writeln();
 
@@ -579,10 +663,26 @@ public class CodeGenerator
         final Field primary = sorm.getPrimaryField();
 
         // TODO: Allow deletion by key
+        writeln("@Override");
+        writeln("public void delete(final %s... %ss)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("delete(getSession(), %ss);", OBJ);
+        writeln("}");
+        writeln();
+
         writeln("public static void delete(final SormSession session, final %s... %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
         writeln("delete(session, Arrays.asList(%ss));", OBJ);
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public void delete(final Collection<%s> %ss)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("delete(getSession(), %ss);", OBJ);
         writeln("}");
         writeln();
 
@@ -605,6 +705,14 @@ public class CodeGenerator
         writeln("{");
         writeln("ps.close();");
         writeln("}");
+        writeln("}");
+        writeln();
+
+        writeln("@Override");
+        writeln("public void delete(final %s %s)", sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("delete(getSession(), %s);", OBJ);
         writeln("}");
         writeln();
 
@@ -639,6 +747,14 @@ public class CodeGenerator
 
     private void dumpOrmMapRead(final Field field)
     {
+        writeln("public Collection<%s> readMapped%s(final %s %s)", field.getLink().getType(), StringUtil.capFirst(field.getName()),
+                sorm.getName(), OBJ);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("return readMapped%s(getSession(), %s);", StringUtil.capFirst(field.getName()), OBJ);
+        writeln("}");
+        writeln();
+
         writeln("public static Collection<%s> readMapped%s(final SormSession session, final %s %s)", field.getLink().getType(),
                 StringUtil.capFirst(field.getName()), sorm.getName(), OBJ);
         writeln("throws SQLException");
@@ -679,6 +795,14 @@ public class CodeGenerator
 
     private void dumpOrmMapCreate(final Field field)
     {
+        writeln("public void map%s(final %s %s, final %s %s)", StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field
+            .getLink().getType(), RHS);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("map%s(getSession(), %s, %s);", StringUtil.capFirst(field.getName()), LHS, RHS);
+        writeln("}");
+        writeln();
+
         writeln("public static void map%s(final SormSession session, final %s %s, final %s %s)",
                 StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
@@ -704,6 +828,14 @@ public class CodeGenerator
 
     private void dumpOrmMapDelete(final Field field)
     {
+        writeln("public void unmap%s(final %s %s, final %s %s)", StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field
+            .getLink().getType(), RHS);
+        writeln("throws SQLException");
+        writeln("{");
+        writeln("unmap%s(getSession(), %s, %s);", StringUtil.capFirst(field.getName()), LHS, RHS);
+        writeln("}");
+        writeln();
+
         writeln("public static void unmap%s(final SormSession session, final %s %s, final %s %s)",
                 StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
@@ -731,14 +863,37 @@ public class CodeGenerator
     {
         final Field primary = sorm.getPrimaryField();
 
-        final StringBuilder buf = new StringBuilder();
-        buf.append(String.format("%s static Collection<%s> %s(final SormSession session", nq.getAccessor(), primary.getType(),
-                                 nq.getName()));
+        final StringBuilder args = new StringBuilder();
+        final StringBuilder argNames = new StringBuilder();
         for (final QueryParam param : nq.getParams()) {
-            buf.append(String.format(", final %s %s", param.getType(), param.getName()));
+            if (args.length() > 0) {
+                args.append(", ");
+                argNames.append(", ");
+            }
+
+            args.append(String.format("final %s %s", param.getType(), param.getName()));
+            argNames.append(String.format("%s", param.getName()));
         }
-        buf.append(")");
-        writeln("%s", buf);
+
+        writeln("%s Collection<%s> %s(%s)", nq.getAccessor(), primary.getType(), nq.getName(), args);
+        writeln("throws SQLException");
+        writeln("{");
+        if (argNames.length() > 0) {
+            writeln("return %s(getSession(), %s);", nq.getName(), argNames);
+        }
+        else {
+            writeln("return %s(getSession());", nq.getName());
+        }
+        writeln("}");
+        writeln();
+
+        if (args.length() > 0) {
+            writeln("%s static Collection<%s> %s(final SormSession session, %s)", nq.getAccessor(), primary.getType(),
+                    nq.getName(), args);
+        }
+        else {
+            writeln("%s static Collection<%s> %s(final SormSession session)", nq.getAccessor(), primary.getType(), nq.getName());
+        }
         writeln("throws SQLException");
         writeln("{");
 
