@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -162,7 +163,8 @@ public class PersonTest
         throws SQLException
     {
         final SormSession session = context.getSession(CacheMode.None);
-        final Person person = populate(1)[0];
+        final Person.Orm orm = new Person.Orm(session);
+        final Person person = populate(orm, 1)[0];
 
         final java.util.Date today = getDayCalendar().getTime();
 
@@ -182,7 +184,8 @@ public class PersonTest
         throws SQLException
     {
         final SormSession session = context.getSession(CacheMode.None);
-        final Person[] people = populate(100);
+        final Person.Orm orm = new Person.Orm(session);
+        final Person[] people = populate(orm, 100);
 
         final java.util.Date today = getDayCalendar().getTime();
 
@@ -206,7 +209,8 @@ public class PersonTest
         throws SQLException
     {
         final SormSession session = context.getSession(CacheMode.None);
-        final Person person = populate(1)[0];
+        final Person.Orm orm = new Person.Orm(session);
+        final Person person = populate(orm, 1)[0];
 
         Person.Orm.delete(session, person);
 
@@ -219,7 +223,8 @@ public class PersonTest
         throws SQLException
     {
         final SormSession session = context.getSession(CacheMode.Immediate);
-        final Person[] people = populate(100);
+        final Person.Orm orm = new Person.Orm(session);
+        final Person[] people = populate(orm, 100);
         Person.Orm.delete(session, people);
 
         for (final Person person : people) {
@@ -260,8 +265,35 @@ public class PersonTest
         assertArrayEquals(friends, people);
 
         for (int i = 0; i < friends.length; i++) {
-            assertTrue(friends[i].getFriends().containsAll(people[i].getFriends()));
-            assertTrue(people[i].getFriends().containsAll(friends[i].getFriends()));
+            assertCollectionsMatch(friends[i].getFriends(), people[i].getFriends());
+        }
+    }
+
+    @Test
+    public void testInstantiatedOrm()
+        throws SQLException
+    {
+        final SormSession session = context.getSession();
+        final Person.Orm orm = new Person.Orm(session);
+        final Person[] people = populate(orm, 100);
+
+        // Evict every other element from the cache
+        for (int i = 0; i < people.length; i += 2) {
+            session.cacheDel(Person.class, people[i]);
+        }
+
+        final Integer[] keys = getKeys(people);
+        final Collection<Person> testCollection = PersonLib.read(orm, keys);
+        final Person test[] = testCollection.toArray(new Person[testCollection.size()]);
+
+        assertArrayEquals(people, test);
+
+        for (int i = 0; i < test.length; i++) {
+            assertEquals(people[i].getSpouseObject(), test[i].getSpouseObject());
+            assertEquals(people[i].getMotherObject(), test[i].getMotherObject());
+            assertEquals(people[i].getFatherObject(), test[i].getFatherObject());
+            assertCollectionsMatch(people[i].getFriends(), test[i].getFriends());
+            assertCollectionsMatch(people[i].getChildren(), test[i].getChildren());
         }
     }
 
@@ -302,15 +334,14 @@ public class PersonTest
      * Build a number of objects with inter-object relationships of all types,
      * and insert them into the database (one at a time).
      * 
+     * @param orm The Orm object to use for all updates.
      * @param count The number of objects to build and insert.
      * @return The objects that were built.
      * @throws SQLException If there was an error inserting the objects.
      */
-    private Person[] populate(final int count)
+    private Person[] populate(final Person.Orm orm, final int count)
         throws SQLException
     {
-        final SormSession session = context.getSession();
-
         final Calendar dobcal = getDayCalendar();
         dobcal.add(Calendar.YEAR, -count);
         dobcal.add(Calendar.MONTH, -count);
@@ -329,7 +360,7 @@ public class PersonTest
                 objs[i].setGender("female");
             }
 
-            Person.Orm.create(session, objs[i]);
+            PersonLib.create(orm, objs[i]);
 
             // Alternate marrying the current with the previous with making
             // the current pair the previous pair's children
@@ -348,21 +379,10 @@ public class PersonTest
 
             // Make the children of each set of parents friends
             if (i % 8 == 7) {
-                objs[i - 5].getFriends().add(objs[i - 1]);
-                objs[i - 1].getFriends().add(objs[i - 5]);
-                Person.Orm.mapFriends(session, objs[i - 5], objs[i - 1]);
-
-                objs[i - 4].getFriends().add(objs[i - 1]);
-                objs[i - 1].getFriends().add(objs[i - 4]);
-                Person.Orm.mapFriends(session, objs[i - 4], objs[i - 1]);
-
-                objs[i - 5].getFriends().add(objs[i - 0]);
-                objs[i - 0].getFriends().add(objs[i - 5]);
-                Person.Orm.mapFriends(session, objs[i - 5], objs[i - 0]);
-
-                objs[i - 4].getFriends().add(objs[i - 0]);
-                objs[i - 0].getFriends().add(objs[i - 4]);
-                Person.Orm.mapFriends(session, objs[i - 4], objs[i - 0]);
+                PersonLib.makeFriends(orm, objs[i - 5], objs[i - 1]);
+                PersonLib.makeFriends(orm, objs[i - 4], objs[i - 1]);
+                PersonLib.makeFriends(orm, objs[i - 5], objs[i - 0]);
+                PersonLib.makeFriends(orm, objs[i - 4], objs[i - 0]);
             }
 
             dobcal.add(Calendar.DAY_OF_YEAR, i);
@@ -391,5 +411,19 @@ public class PersonTest
         }
 
         return keys;
+    }
+
+    private static <T> void assertCollectionsMatch(final Collection<T> lhs, final Collection<T> rhs)
+    {
+        if (null != lhs && null != rhs) {
+            assertTrue(lhs.containsAll(rhs));
+            assertTrue(rhs.containsAll(lhs));
+        }
+        else if (null == lhs && null == rhs) {
+            return;
+        }
+        else {
+            fail("One null collection");
+        }
     }
 }

@@ -50,6 +50,9 @@ select id
     </field>
 
     <field name="friends" type="Collection&lt;Person&gt;">
+        <get override="true" />
+        <set override="true" />
+
         <link mode="ManyToMany" key-type="Integer" type="Person">
             <collection>
                 <read>
