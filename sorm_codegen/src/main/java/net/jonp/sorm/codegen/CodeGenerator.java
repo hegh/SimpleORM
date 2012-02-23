@@ -934,7 +934,19 @@ public class CodeGenerator
                 continue;
             }
 
-            writeln("%s %s _%s;", field.getAccessor(), field.getType(), field.getName());
+            switch (field.getLink().getMode()) {
+                case None:
+                case OneToMany:
+                case ManyToMany:
+                    writeln("%s %s _%s;", field.getAccessor(), field.getType(), field.getName());
+                    break;
+
+                case OneToOne:
+                case ManyToOne:
+                    writeln("%s %s _%s;", field.getAccessor(), field.getType(), field.getName());
+                    writeln("%s %s _%sObject;", field.getAccessor(), field.getLink().getType(), field.getName());
+                    break;
+            }
         }
     }
 
@@ -954,25 +966,68 @@ public class CodeGenerator
             }
 
             if (!field.getGet().isFromSuper()) {
-                if (field.getGet().isOverride()) {
-                    writeln("@Override");
+                if (LinkMode.OneToOne == field.getLink().getMode() || LinkMode.ManyToOne == field.getLink().getMode()) {
+                    if (field.getGet().isOverride()) {
+                        writeln("@Override");
+                    }
+                    writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
+                    writeln("{");
+                    writeln("return _%s;", field.getName());
+                    writeln("}");
+                    writeln();
+
+                    if (field.getGet().isOverride()) {
+                        writeln("@Override");
+                    }
+                    writeln("%s %s %sObject()", field.getGet().getAccessor(), field.getLink().getType(), field.getGet().getName());
+                    writeln("{");
+                    writeln("return _%sObject;", field.getName());
+                    writeln("}");
+                    writeln();
                 }
-                writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
-                writeln("{");
-                writeln("return _%s;", field.getName());
-                writeln("}");
-                writeln();
+                else {
+                    if (field.getGet().isOverride()) {
+                        writeln("@Override");
+                    }
+                    writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
+                    writeln("{");
+                    writeln("return _%s;", field.getName());
+                    writeln("}");
+                    writeln();
+                }
             }
 
             if (!field.getSet().isFromSuper()) {
-                if (field.getSet().isOverride()) {
-                    writeln("@Override");
+                if (LinkMode.OneToOne == field.getLink().getMode() || LinkMode.ManyToOne == field.getLink().getMode()) {
+                    if (field.getSet().isOverride()) {
+                        writeln("@Override");
+                    }
+                    writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(),
+                            field.getName());
+                    writeln("{");
+                    writeln("_%s = %s;", field.getName(), field.getName());
+                    writeln("}");
+                    writeln();
+
+                    if (field.getSet().isOverride()) {
+                        writeln("@Override");
+                    }
+                    writeln("%s void %sObject(final %s %sObject)", field.getSet().getAccessor(), field.getSet().getName(), field
+                        .getLink().getType(), field.getName());
+                    writeln("{");
+                    writeln("_%sObject = %sObject;", field.getName(), field.getName());
+                    writeln("}");
                 }
-                writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(),
-                        field.getName());
-                writeln("{");
-                writeln("_%s = %s;", field.getName(), field.getName());
-                writeln("}");
+                else {
+                    if (field.getSet().isOverride()) {
+                        writeln("@Override");
+                    }
+                    writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(),
+                            field.getName());
+                    writeln("{");
+                    writeln("_%s = %s;", field.getName(), field.getName());
+                    writeln("}");
+                }
             }
 
             // TODO: Dump special accessors for linked fields (adders/removers,
