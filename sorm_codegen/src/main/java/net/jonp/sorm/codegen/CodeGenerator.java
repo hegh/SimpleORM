@@ -490,6 +490,7 @@ public class CodeGenerator
         writeln("{");
         writeln("return new SormIterable<%s>()", sorm.getName());
         writeln("{");
+        writeln("@Override");
         writeln("public SormIterator<%s> iterator()", sorm.getName());
         writeln("{");
         writeln("return new SormIterator<%s>()", sorm.getName());
@@ -512,6 +513,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("@Override");
         writeln("public boolean hasNext()");
         writeln("{");
         writeln("if (!nextKnown)");
@@ -546,6 +548,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("@Override");
         writeln("public %s next()", sorm.getName());
         writeln("{");
         writeln("if (!hasNext())");
@@ -561,12 +564,14 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("@Override");
         writeln("public void remove()");
         writeln("{");
         writeln("throw new UnsupportedOperationException(\"remove() not supported\");");
         writeln("}");
         writeln();
 
+        writeln("@Override");
         writeln("public void close()");
         writeln("throws SQLException");
         writeln("{");
