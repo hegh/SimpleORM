@@ -188,18 +188,22 @@ public class CodeGenerator
         }
 
         for (final Field field : sorm.getFields()) {
-            if (field.getLink().getMode() == LinkMode.ManyToMany && field.getLink().getCollection() != null) {
-                writeln();
-                dumpOrmMapRead(field);
-
-                if (field.getLink().getCollection().getCreate() != null) {
+            if (field.getLink().getCollection() != null) {
+                if (field.getLink().getMode() == LinkMode.OneToMany || field.getLink().getMode() == LinkMode.ManyToMany) {
                     writeln();
-                    dumpOrmMapCreate(field);
+                    dumpOrmMapRead(field);
                 }
 
-                if (field.getLink().getCollection().getDelete() != null) {
-                    writeln();
-                    dumpOrmMapDelete(field);
+                if (field.getLink().getMode() == LinkMode.ManyToMany) {
+                    if (field.getLink().getCollection().getCreate() != null) {
+                        writeln();
+                        dumpOrmMapCreate(field);
+                    }
+
+                    if (field.getLink().getCollection().getDelete() != null) {
+                        writeln();
+                        dumpOrmMapDelete(field);
+                    }
                 }
             }
         }
