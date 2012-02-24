@@ -8,9 +8,7 @@ Future enhancements for Sorm:
    For example, what happens if you do not have a primary field defined for an
    object?
  * Flesh out the example project into something useful.
- * Make it possible to deal with Orm classes in a generic manner. This will
-   likely require instance method versions of the static methods, with the Orm
-   class wrapping a SormSession object. Then the Orm object can be passed around
-   to other classes that may use multiple Orm objects to build a more useful
-   object graph.
+ * Add the functionality of the test projects PersonLib.link() method to the
+   standard codegen output. Needs to be efficient (a single call to each orm
+   read method with a collection of all necessary objects of that type).
 
