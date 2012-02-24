@@ -127,6 +127,9 @@ public class CodeGenerator
         writeln("import org.apache.log4j.Logger;");
         writeln();
 
+        writeln("/**");
+        writeln(" * Database-backed data model class.");
+        writeln(" */");
         writeln("%s class %s", sorm.getAccessor(), sorm.getName());
         if (null != sorm.getSuper()) {
             writeln("extends %s", sorm.getSuper());
@@ -139,6 +142,9 @@ public class CodeGenerator
         dumpFields();
         writeln();
 
+        writeln("/**");
+        writeln(" * Initialize a new, empty %s.", sorm.getName());
+        writeln(" */");
         writeln("public %s()", sorm.getName());
         writeln("{");
         writeln("// Nothing to do");
@@ -153,12 +159,20 @@ public class CodeGenerator
     {
         final Field primary = sorm.getPrimaryField();
 
+        writeln("/**");
+        writeln(" * Maps between the %s class and a database.", sorm.getName());
+        writeln(" */");
         writeln("%s static class Orm", sorm.getOrm_accessor());
         writeln("extends SormBase<%s, %s>", primary.getType(), sorm.getName());
         writeln("{");
         writeln("static final Logger LOG = Logger.getLogger(Orm.class);");
         writeln();
 
+        writeln("/**");
+        writeln(" * Instantiate an Orm object, wrapped around a {@link SormSession}.");
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use for all database accesses.");
+        writeln(" */");
         writeln("public Orm(final SormSession session)");
         writeln("{");
         writeln("super(session);");
@@ -227,6 +241,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #create(SormSession, Collection)}. */");
         writeln("public static void create(final SormSession session, final %s... %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -242,6 +257,15 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Insert a number of %s objects into the database.", sorm.getName());
+        writeln(" * Each object will have its primary field set to the value created during");
+        writeln(" * the insert.");
+        writeln(" *");
+        writeln(" * @param session The session to use for the inserts.");
+        writeln(" * @param %ss The objects to insert.", OBJ);
+        writeln(" * @throws SQLException If there was a problem accessing the database.");
+        writeln(" */");
         writeln("public static void create(final SormSession session, final Collection<%s> %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -260,6 +284,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #create(SormSession, Collection)}. */");
         writeln("public static void create(final SormSession session, final %s %s)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -289,6 +314,8 @@ public class CodeGenerator
     private void dumpOrmPk()
     {
         final Field primary = sorm.getPrimaryField();
+
+        writeln("/** Get the last assigned primary key. */");
         writeln("private static %s getPk(final SormSession session)", primary.getType());
         writeln("throws SQLException");
         writeln("{");
@@ -326,6 +353,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #read(SormSession, Collection)}. */");
         writeln("public static Collection<%s> read(final SormSession session, final %s... %ss)", sorm.getName(), primary.getType(),
                 KEY);
         writeln("throws SQLException");
@@ -342,6 +370,14 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Read a number of %s objects out of the database.", sorm.getName());
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use.");
+        writeln(" * @param %ss The keys of the %s objects to read.", KEY, sorm.getName());
+        writeln(" * @return The %s objects that were read. May not include all requested objects.", sorm.getName());
+        writeln(" * @throws SQLException If there was a problem accessing the database.");
+        writeln(" */");
         writeln("public static Collection<%s> read(final SormSession session, final Collection<%s> %ss)", sorm.getName(),
                 primary.getType(), KEY);
         writeln("throws SQLException");
@@ -407,6 +443,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #read(SormSession, Collection)}. */");
         writeln("public static %s read(final SormSession session, final %s %s)", sorm.getName(), primary.getType(), KEY);
         writeln("throws SQLException");
         writeln("{");
@@ -473,6 +510,15 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Get an {@link Iterable} that will provide {@link Iterator}s that can read");
+        writeln(" * a given sequence of %s objects from the database.", sorm.getName());
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use.");
+        writeln(" * @param %ss The keys of the %s objects to read. Order will be preserved.", KEY, sorm.getName());
+        writeln(" * @return An {@link SormIterable} that will return {@link SormIterator}s.");
+        writeln(" *         Don't forget to close the {@link SormIterator}s that you get.");
+        writeln(" */");
         writeln("public static SormIterable<%s> matches(final SormSession session, final Collection<%s> %ss)", sorm.getName(),
                 primary.getType(), KEY);
         writeln("{");
@@ -581,6 +627,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #update(SormSession, Collection)}. */");
         writeln("public static void update(final SormSession session, final %s... %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -596,6 +643,13 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Update a collection of %s objects in the database.", sorm.getName());
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use.");
+        writeln(" * @param %ss The %s objects to update in the database.", OBJ, sorm.getName());
+        writeln(" * @throws SQLException If there is a problem.");
+        writeln(" */");
         writeln("public static void update(final SormSession session, final Collection<%s> %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -626,6 +680,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #update(SormSession, Collection)}. */");
         writeln("public static void update(final SormSession session, final %s %s)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -656,6 +711,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #delete(SormSession, Collection)}. */");
         writeln("public static void delete(final SormSession session, final %s... %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -671,6 +727,13 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Delete a collection of %s objects from the database.", sorm.getName());
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use.");
+        writeln(" * @param %ss The %s objects to delete from the database.", OBJ, sorm.getName());
+        writeln(" * @throws SQLException If there was a problem.");
+        writeln(" */");
         writeln("public static void delete(final SormSession session, final Collection<%s> %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -701,6 +764,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/** Convenience wrapper around {@link #delete(SormSession, Collection)}. */");
         writeln("public static void delete(final SormSession session, final %s %s)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
@@ -720,6 +784,8 @@ public class CodeGenerator
 
     private void dumpOrmMapRead(final Field field)
     {
+        writeln("/** Convenience wrapper around {@link #readMapped%s(SormSession, %s)}. */", StringUtil.capFirst(field.getName()),
+                sorm.getName());
         writeln("public Collection<%s> readMapped%s(final %s %s)", field.getLink().getType(), StringUtil.capFirst(field.getName()),
                 sorm.getName(), OBJ);
         writeln("throws SQLException");
@@ -728,6 +794,14 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Read all mapped %s related to a given %s.", field.getName(), sorm.getName());
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use.");
+        writeln(" * @param %s The %s whose %s to read.", OBJ, sorm.getName(), field.getName());
+        writeln(" * @return The collection of %s mapped to this %s.", field.getName(), sorm.getName());
+        writeln(" * @throws SQLException If there was a problem.");
+        writeln(" */");
         writeln("public static Collection<%s> readMapped%s(final SormSession session, final %s %s)", field.getLink().getType(),
                 StringUtil.capFirst(field.getName()), sorm.getName(), OBJ);
         writeln("throws SQLException");
@@ -768,6 +842,8 @@ public class CodeGenerator
 
     private void dumpOrmMapCreate(final Field field)
     {
+        writeln("/** Convenience wrapper around {@link #map%s(SormSession, %s, %s)}. */", StringUtil.capFirst(field.getName()),
+                sorm.getName(), field.getLink().getType());
         writeln("public void map%s(final %s %s, final %s %s)", StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field
             .getLink().getType(), RHS);
         writeln("throws SQLException");
@@ -776,6 +852,14 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Add a new %s mapping to the given %s.", StringUtil.capFirst(field.getName()), sorm.getName());
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use.");
+        writeln(" * @param %s The %s object to which the mapping should be added.", LHS, sorm.getName());
+        writeln(" * @param %s The %s to add to the mappings of <code>%s</code>.", RHS, StringUtil.capFirst(field.getName()), LHS);
+        writeln(" * @throws SQLException If there was a problem.");
+        writeln(" */");
         writeln("public static void map%s(final SormSession session, final %s %s, final %s %s)",
                 StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
@@ -801,6 +885,8 @@ public class CodeGenerator
 
     private void dumpOrmMapDelete(final Field field)
     {
+        writeln("/** Convenience wrapper around {@link #unmap%s(SormSession, %s, %s)}. */", StringUtil.capFirst(field.getName()),
+                sorm.getName(), field.getLink().getType());
         writeln("public void unmap%s(final %s %s, final %s %s)", StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field
             .getLink().getType(), RHS);
         writeln("throws SQLException");
@@ -809,6 +895,15 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
+        writeln("/**");
+        writeln(" * Remove an existing %s mapping from the given %s.", StringUtil.capFirst(field.getName()), sorm.getName());
+        writeln(" *");
+        writeln(" * @param session The {@link SormSession} to use.");
+        writeln(" * @param %s The %s object from which the mapping should be removed.", LHS, sorm.getName());
+        writeln(" * @param %s The %s to remove from the mappings of <code>%s</code>.", RHS, StringUtil.capFirst(field.getName()),
+                LHS);
+        writeln(" * @throws SQLException If there was a problem.");
+        writeln(" */");
         writeln("public static void unmap%s(final SormSession session, final %s %s, final %s %s)",
                 StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
@@ -848,6 +943,8 @@ public class CodeGenerator
             argNames.append(String.format("%s", param.getName()));
         }
 
+        // FUTURE: Is there any relevant documentation we can provide for this
+        // method?
         writeln("%s Collection<%s> %s(%s)", nq.getAccessor(), primary.getType(), nq.getName(), args);
         writeln("throws SQLException");
         writeln("{");
