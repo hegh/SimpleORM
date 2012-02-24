@@ -59,6 +59,7 @@ public class SormMojo
     /** Code generator used for output file generation. */
     final CodeGenerator codegen = new CodeGenerator();
 
+    @Override
     public void execute()
         throws MojoExecutionException
     {

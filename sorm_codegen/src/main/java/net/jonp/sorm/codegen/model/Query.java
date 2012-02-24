@@ -30,6 +30,7 @@ public class Query
         return byDialect.get(dialect);
     }
 
+    @Override
     public Iterator<String> iterator()
     {
         return byDialect.keySet().iterator();

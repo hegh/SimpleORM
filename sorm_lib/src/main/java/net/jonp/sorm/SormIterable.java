@@ -8,5 +8,6 @@ package net.jonp.sorm;
 public interface SormIterable<T>
     extends Iterable<T>
 {
+    @Override
     public SormIterator<T> iterator();
 }
