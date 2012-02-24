@@ -106,6 +106,7 @@ public class CodeGenerator
         writeln("import java.util.ArrayList;");
         writeln("import java.util.Arrays;");
         writeln("import java.util.Collection;");
+        writeln("import java.util.Collections;");
         writeln("import java.util.Iterator;");
         writeln("import java.util.LinkedHashMap;");
         writeln("import java.util.LinkedList;");
@@ -409,28 +410,15 @@ public class CodeGenerator
         writeln("public static %s read(final SormSession session, final %s %s)", sorm.getName(), primary.getType(), KEY);
         writeln("throws SQLException");
         writeln("{");
-
-        // Check the cache before building a PreparedStatement
-        writeln("%s %s = session.cacheGet(%s.class, %s);", sorm.getName(), OBJ, sorm.getName(), KEY);
-        writeln("if (null == %s)", OBJ);
+        writeln("final Collection<%s> %ss = read(session, Collections.singleton(%s));", sorm.getName(), OBJ, KEY);
+        writeln("if (%ss.isEmpty())", OBJ);
         writeln("{");
-        // Not in the cache, read from the DB
-        writeln("final PreparedStatement ps;");
-        buildPreparedStatement(sorm.getRead());
-        writeln();
-
-        writeln("try");
+        writeln("return null;");
+        writeln("}");
+        writeln("else");
         writeln("{");
-        writeln("%s = readSingle(ps, %s);", OBJ, KEY);
-        writeln("session.cacheAdd(%s.class, %s, %s);", sorm.getName(), KEY, OBJ);
+        writeln("return %ss.iterator().next();", OBJ);
         writeln("}");
-        writeln("finally");
-        writeln("{");
-        writeln("ps.close();");
-        writeln("}");
-        writeln("}");
-        writeln();
-        writeln("return %s;", OBJ);
         writeln("}");
         writeln();
 
@@ -641,19 +629,7 @@ public class CodeGenerator
         writeln("public static void update(final SormSession session, final %s %s)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
-
-        writeln("final PreparedStatement ps;");
-        buildPreparedStatement(sorm.getUpdate());
-        writeln();
-
-        writeln("try");
-        writeln("{");
-        writeln("updateSingle(ps, %s);", OBJ);
-        writeln("}");
-        writeln("finally");
-        writeln("{");
-        writeln("ps.close();");
-        writeln("}");
+        writeln("update(session, Collections.singleton(%s));", OBJ);
         writeln("}");
         writeln();
 
@@ -728,19 +704,7 @@ public class CodeGenerator
         writeln("public static void delete(final SormSession session, final %s %s)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
-        writeln("final PreparedStatement ps;");
-        buildPreparedStatement(sorm.getDelete());
-        writeln();
-
-        writeln("try");
-        writeln("{");
-        writeln("deleteSingle(ps, %s);", OBJ);
-        writeln("session.cacheDel(%s.class, %s.%s());", sorm.getName(), OBJ, primary.getGet().getName());
-        writeln("}");
-        writeln("finally");
-        writeln("{");
-        writeln("ps.close();");
-        writeln("}");
+        writeln("delete(session, Collections.singleton(%s));", OBJ);
         writeln("}");
         writeln();
 
