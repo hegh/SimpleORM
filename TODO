@@ -11,4 +11,17 @@ Future enhancements for Sorm:
  * Add the functionality of the test projects PersonLib.link() method to the
    standard codegen output. Needs to be efficient (a single call to each orm
    read method with a collection of all necessary objects of that type).
+ * Add a way to group multiple fields in a single row of a table into a single
+   field object. For example, you way want a three-coordinate position attached
+   to a generated object, and you want the position to be encapsulated in a
+   single object attached to the generate class, possible even non-nullable (so
+   playing with one-to-one links won't work).
+ * XSD constraints for various attributes (SQLType, LinkMode, ...)
+ * Validation rules after parsing the input file, but before running code
+   generation, so we get multiple friendly errors instead of a single unhelpful
+   exception if something goes wrong.
+ * Separate getters/setters from JDBC translators. It is likely to be very
+   confusing for newcomers that the attributes of getters and setters describe
+   the field getter/setter on the main class, but the body describes how to
+   translate to/from JDBC getters/setters.
 
