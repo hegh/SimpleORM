@@ -158,14 +158,14 @@ delete
         </d>
     </delete>
 
-    <query type="Person" name="getByGender">
+    <query name="getByGender">
         <param type="String" name="gender" />
         <q>
             select id from person where sex = %{gender}
         </q>
     </query>
 
-    <query type="Person" name="getByDob">
+    <query name="getByDob">
         <param type="java.util.Date" name="dob" sql-type="Date">
             <set>new java.sql.Date(%{}.getTime())</set>
         </param>
