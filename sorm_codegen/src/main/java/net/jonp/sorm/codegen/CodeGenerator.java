@@ -405,7 +405,7 @@ public class CodeGenerator
         writeln();
 
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(sorm.getRead());
+        buildPreparedStatement(sorm.getRead(), null);
         writeln();
 
         writeln("final Collection<%s> %ss = new ArrayList<%s>(%ss.size());", sorm.getName(), OBJ, sorm.getName(), KEY);
@@ -538,7 +538,7 @@ public class CodeGenerator
         writeln("{");
         writeln("try");
         writeln("{");
-        buildPreparedStatement(sorm.getRead());
+        buildPreparedStatement(sorm.getRead(), null);
         writeln("}");
         writeln("catch (final SQLException sqle)");
         writeln("{");
@@ -655,7 +655,7 @@ public class CodeGenerator
         writeln("{");
 
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(sorm.getUpdate());
+        buildPreparedStatement(sorm.getUpdate(), null);
         writeln();
 
         writeln("try");
@@ -738,7 +738,7 @@ public class CodeGenerator
         writeln("throws SQLException");
         writeln("{");
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(sorm.getDelete());
+        buildPreparedStatement(sorm.getDelete(), null);
         writeln();
 
         writeln("try");
@@ -784,30 +784,31 @@ public class CodeGenerator
 
     private void dumpOrmMapRead(final Field field)
     {
-        writeln("/** Convenience wrapper around {@link #readMapped%s(SormSession, %s)}. */", StringUtil.capFirst(field.getName()),
+        final String fieldName = getSafeFieldName(field);
+        writeln("/** Convenience wrapper around {@link #readMapped%s(SormSession, %s)}. */", StringUtil.capFirst(fieldName),
                 sorm.getName());
-        writeln("public Collection<%s> readMapped%s(final %s %s)", field.getLink().getType(), StringUtil.capFirst(field.getName()),
+        writeln("public Collection<%s> readMapped%s(final %s %s)", field.getLink().getType(), StringUtil.capFirst(fieldName),
                 sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
-        writeln("return readMapped%s(getSession(), %s);", StringUtil.capFirst(field.getName()), OBJ);
+        writeln("return readMapped%s(getSession(), %s);", StringUtil.capFirst(fieldName), OBJ);
         writeln("}");
         writeln();
 
         writeln("/**");
-        writeln(" * Read all mapped %s related to a given %s.", field.getName(), sorm.getName());
+        writeln(" * Read all mapped %s related to a given %s.", fieldName, sorm.getName());
         writeln(" *");
         writeln(" * @param session The {@link SormSession} to use.");
-        writeln(" * @param %s The %s whose %s to read.", OBJ, sorm.getName(), field.getName());
-        writeln(" * @return The collection of %s mapped to this %s.", field.getName(), sorm.getName());
+        writeln(" * @param %s The %s whose %s to read.", OBJ, sorm.getName(), fieldName);
+        writeln(" * @return The collection of %s mapped to this %s.", fieldName, sorm.getName());
         writeln(" * @throws SQLException If there was a problem.");
         writeln(" */");
         writeln("public static Collection<%s> readMapped%s(final SormSession session, final %s %s)", field.getLink().getType(),
-                StringUtil.capFirst(field.getName()), sorm.getName(), OBJ);
+                StringUtil.capFirst(fieldName), sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(field.getLink().getCollection().getRead());
+        buildPreparedStatement(field.getLink().getCollection().getRead(), null);
         writeln();
 
         writeln("final Collection<%s> %ss = new LinkedList<%s>();", field.getLink().getKey_type(), KEY, field.getLink()
@@ -842,31 +843,32 @@ public class CodeGenerator
 
     private void dumpOrmMapCreate(final Field field)
     {
-        writeln("/** Convenience wrapper around {@link #map%s(SormSession, %s, %s)}. */", StringUtil.capFirst(field.getName()),
+        final String fieldName = getSafeFieldName(field);
+        writeln("/** Convenience wrapper around {@link #map%s(SormSession, %s, %s)}. */", StringUtil.capFirst(fieldName),
                 sorm.getName(), field.getLink().getType());
-        writeln("public void map%s(final %s %s, final %s %s)", StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field
-            .getLink().getType(), RHS);
+        writeln("public void map%s(final %s %s, final %s %s)", StringUtil.capFirst(fieldName), sorm.getName(), LHS, field.getLink()
+            .getType(), RHS);
         writeln("throws SQLException");
         writeln("{");
-        writeln("map%s(getSession(), %s, %s);", StringUtil.capFirst(field.getName()), LHS, RHS);
+        writeln("map%s(getSession(), %s, %s);", StringUtil.capFirst(fieldName), LHS, RHS);
         writeln("}");
         writeln();
 
         writeln("/**");
-        writeln(" * Add a new %s mapping to the given %s.", StringUtil.capFirst(field.getName()), sorm.getName());
+        writeln(" * Add a new %s mapping to the given %s.", StringUtil.capFirst(fieldName), sorm.getName());
         writeln(" *");
         writeln(" * @param session The {@link SormSession} to use.");
         writeln(" * @param %s The %s object to which the mapping should be added.", LHS, sorm.getName());
-        writeln(" * @param %s The %s to add to the mappings of <code>%s</code>.", RHS, StringUtil.capFirst(field.getName()), LHS);
+        writeln(" * @param %s The %s to add to the mappings of <code>%s</code>.", RHS, StringUtil.capFirst(fieldName), LHS);
         writeln(" * @throws SQLException If there was a problem.");
         writeln(" */");
-        writeln("public static void map%s(final SormSession session, final %s %s, final %s %s)",
-                StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
+        writeln("public static void map%s(final SormSession session, final %s %s, final %s %s)", StringUtil.capFirst(fieldName),
+                sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
         writeln("{");
 
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(field.getLink().getCollection().getCreate());
+        buildPreparedStatement(field.getLink().getCollection().getCreate(), null);
         writeln();
 
         writeln("try");
@@ -885,32 +887,32 @@ public class CodeGenerator
 
     private void dumpOrmMapDelete(final Field field)
     {
-        writeln("/** Convenience wrapper around {@link #unmap%s(SormSession, %s, %s)}. */", StringUtil.capFirst(field.getName()),
+        final String fieldName = getSafeFieldName(field);
+        writeln("/** Convenience wrapper around {@link #unmap%s(SormSession, %s, %s)}. */", StringUtil.capFirst(fieldName),
                 sorm.getName(), field.getLink().getType());
-        writeln("public void unmap%s(final %s %s, final %s %s)", StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field
+        writeln("public void unmap%s(final %s %s, final %s %s)", StringUtil.capFirst(fieldName), sorm.getName(), LHS, field
             .getLink().getType(), RHS);
         writeln("throws SQLException");
         writeln("{");
-        writeln("unmap%s(getSession(), %s, %s);", StringUtil.capFirst(field.getName()), LHS, RHS);
+        writeln("unmap%s(getSession(), %s, %s);", StringUtil.capFirst(fieldName), LHS, RHS);
         writeln("}");
         writeln();
 
         writeln("/**");
-        writeln(" * Remove an existing %s mapping from the given %s.", StringUtil.capFirst(field.getName()), sorm.getName());
+        writeln(" * Remove an existing %s mapping from the given %s.", StringUtil.capFirst(fieldName), sorm.getName());
         writeln(" *");
         writeln(" * @param session The {@link SormSession} to use.");
         writeln(" * @param %s The %s object from which the mapping should be removed.", LHS, sorm.getName());
-        writeln(" * @param %s The %s to remove from the mappings of <code>%s</code>.", RHS, StringUtil.capFirst(field.getName()),
-                LHS);
+        writeln(" * @param %s The %s to remove from the mappings of <code>%s</code>.", RHS, StringUtil.capFirst(fieldName), LHS);
         writeln(" * @throws SQLException If there was a problem.");
         writeln(" */");
-        writeln("public static void unmap%s(final SormSession session, final %s %s, final %s %s)",
-                StringUtil.capFirst(field.getName()), sorm.getName(), LHS, field.getLink().getType(), RHS);
+        writeln("public static void unmap%s(final SormSession session, final %s %s, final %s %s)", StringUtil.capFirst(fieldName),
+                sorm.getName(), LHS, field.getLink().getType(), RHS);
         writeln("throws SQLException");
         writeln("{");
 
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(field.getLink().getCollection().getDelete());
+        buildPreparedStatement(field.getLink().getCollection().getDelete(), null);
         writeln();
 
         writeln("try");
@@ -1000,17 +1002,18 @@ public class CodeGenerator
                 continue;
             }
 
+            final String fieldName = getSafeFieldName(field);
             switch (field.getLink().getMode()) {
                 case None:
                 case OneToMany:
                 case ManyToMany:
-                    writeln("%s %s _%s;", field.getAccessor(), field.getType(), field.getName());
+                    writeln("%s %s _%s;", field.getAccessor(), field.getType(), fieldName);
                     break;
 
                 case OneToOne:
                 case ManyToOne:
-                    writeln("%s %s _%s;", field.getAccessor(), field.getType(), field.getName());
-                    writeln("%s %s _%sObject;", field.getAccessor(), field.getLink().getType(), field.getName());
+                    writeln("%s %s _%s;", field.getAccessor(), field.getType(), fieldName);
+                    writeln("%s %s _%sObject;", field.getAccessor(), field.getLink().getType(), fieldName);
                     break;
             }
         }
@@ -1024,6 +1027,10 @@ public class CodeGenerator
                 continue;
             }
 
+            if (null != field.getParent()) {
+                continue;
+            }
+
             if (first) {
                 first = false;
             }
@@ -1031,6 +1038,7 @@ public class CodeGenerator
                 writeln();
             }
 
+            final String fieldName = getSafeFieldName(field);
             if (!field.getGet().isFromSuper()) {
                 if (LinkMode.OneToOne == field.getLink().getMode() || LinkMode.ManyToOne == field.getLink().getMode()) {
                     if (field.getGet().isOverride()) {
@@ -1038,7 +1046,7 @@ public class CodeGenerator
                     }
                     writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
                     writeln("{");
-                    writeln("return _%s;", field.getName());
+                    writeln("return _%s;", fieldName);
                     writeln("}");
                     writeln();
 
@@ -1047,7 +1055,7 @@ public class CodeGenerator
                     }
                     writeln("%s %s %sObject()", field.getGet().getAccessor(), field.getLink().getType(), field.getGet().getName());
                     writeln("{");
-                    writeln("return _%sObject;", field.getName());
+                    writeln("return _%sObject;", fieldName);
                     writeln("}");
                     writeln();
                 }
@@ -1057,7 +1065,7 @@ public class CodeGenerator
                     }
                     writeln("%s %s %s()", field.getGet().getAccessor(), field.getType(), field.getGet().getName());
                     writeln("{");
-                    writeln("return _%s;", field.getName());
+                    writeln("return _%s;", fieldName);
                     writeln("}");
                     writeln();
                 }
@@ -1069,9 +1077,9 @@ public class CodeGenerator
                         writeln("@Override");
                     }
                     writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(),
-                            field.getName());
+                            fieldName);
                     writeln("{");
-                    writeln("_%s = %s;", field.getName(), field.getName());
+                    writeln("_%s = %s;", fieldName, fieldName);
                     writeln("}");
                     writeln();
 
@@ -1079,9 +1087,9 @@ public class CodeGenerator
                         writeln("@Override");
                     }
                     writeln("%s void %sObject(final %s %sObject)", field.getSet().getAccessor(), field.getSet().getName(), field
-                        .getLink().getType(), field.getName());
+                        .getLink().getType(), fieldName);
                     writeln("{");
-                    writeln("_%sObject = %sObject;", field.getName(), field.getName());
+                    writeln("_%sObject = %sObject;", fieldName, fieldName);
                     writeln("}");
                 }
                 else {
@@ -1089,9 +1097,9 @@ public class CodeGenerator
                         writeln("@Override");
                     }
                     writeln("%s void %s(final %s %s)", field.getSet().getAccessor(), field.getSet().getName(), field.getType(),
-                            field.getName());
+                            fieldName);
                     writeln("{");
-                    writeln("_%s = %s;", field.getName(), field.getName());
+                    writeln("_%s = %s;", fieldName, fieldName);
                     writeln("}");
                 }
             }
@@ -1112,7 +1120,7 @@ public class CodeGenerator
     private void dumpPreparedStatement(final Query query, final String objname)
     {
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(query);
+        buildPreparedStatement(query, null);
         writeln();
         writeln("try");
         writeln("{");
@@ -1122,14 +1130,14 @@ public class CodeGenerator
     private void dumpPreparedStatement(final NamedQuery nq)
     {
         writeln("final PreparedStatement ps;");
-        buildPreparedStatement(nq.getQuery());
+        buildPreparedStatement(nq.getQuery(), nq.getParams());
         writeln();
         writeln("try");
         writeln("{");
         populatePreparedStatement(nq);
     }
 
-    private void buildPreparedStatement(final Query query)
+    private void buildPreparedStatement(final Query query, final Collection<QueryParam> params)
     {
         final Collection<String> dialects = query.getDialects();
         final boolean hasAny = dialects.remove("*");
@@ -1149,7 +1157,7 @@ public class CodeGenerator
                 writeln("{");
                 writeln("final String sql =");
                 incIndent();
-                writeln("\"%s\";", compileSql(query.getQuery(dialect)));
+                writeln("\"%s\";", compileSql(query.getQuery(dialect), params));
                 decIndent();
                 writeln("LOG.debug(\"SQL statement:\\n\" + sql);");
                 writeln("ps = session.getConnection().prepareStatement(sql);");
@@ -1163,7 +1171,7 @@ public class CodeGenerator
         if (hasAny) {
             writeln("final String sql =");
             incIndent();
-            writeln("\"%s\";", compileSql(query.getQuery("*")));
+            writeln("\"%s\";", compileSql(query.getQuery("*"), params));
             decIndent();
             writeln("LOG.debug(\"SQL statement:\\n\" + sql);");
             writeln("ps = session.getConnection().prepareStatement(sql);");
@@ -1259,12 +1267,29 @@ public class CodeGenerator
         }
     }
 
-    private String compileSql(String query)
+    private String compileSql(String query, final Collection<QueryParam> params)
     {
         query = query.replaceAll("%\\{\\}", "?");
-        for (final Field field : sorm.getFields()) {
-            query = query.replaceAll("%\\{" + field.getName() + "\\}", "?");
-            query = query.replaceAll("%\\{1\\." + field.getName() + "\\}", "?");
+        if (params == null) {
+            for (final Field field : sorm.getFields()) {
+                if (field.isGroup()) {
+                    // Skip grouped fields because you cannot directly write
+                    // them to
+                    // the database
+                    continue;
+                }
+
+                final String fieldName = getFieldName(field);
+                query = query.replaceAll("%\\{" + fieldName + "\\}", "?");
+                query = query.replaceAll("%\\{1\\." + fieldName + "\\}", "?");
+            }
+        }
+        else {
+            for (final QueryParam param : params) {
+                final String paramName = param.getName();
+                query = query.replaceAll("%\\{" + paramName + "\\}", "?");
+                query = query.replaceAll("%\\{1\\." + paramName + "\\}", "?");
+            }
         }
 
         // Search for %{2.*} references
@@ -1276,29 +1301,46 @@ public class CodeGenerator
         return query;
     }
 
-    private String compileAccessor(final String query, final String objName)
+    private String compileAccessor(final Field field, final String query, final String objName)
     {
-        return query.replaceAll("%\\{\\}", objName);
+        final String obj;
+        final Field parent = getParentField(field);
+        if (null != parent) {
+            obj = compileAccessor(parent, parent.getGet().getContent(), objName);
+        }
+        else {
+            obj = objName;
+        }
+
+        return query.replaceAll("%\\{\\}", obj);
     }
 
     private void compileFromRS(final Field f, final String objname)
     {
         // Cannot get *-to-many fields from an individual ResultSet row
-        if (!(f.getLink().getMode() == LinkMode.OneToMany || f.getLink().getMode() == LinkMode.ManyToMany)) {
-            // Convert all %{} into objname
-            String s = f.getSet().getContent();
-            s = s.replaceAll("%\\{\\}", objname);
-
-            // Convert all %{xxx} into rs.get*("xxx")
-            for (final Field field : sorm.getFields()) {
-                if (s.contains("%{" + field.getName() + "}")) {
-                    s = s.replaceAll("%\\{" + field.getName() + "\\}", //
-                                     String.format("rs.%s(\"%s\")", field.getSql_type().getter, field.getSql_column()));
-                }
-            }
-
-            writeln("%s;", s);
+        if (f.getLink().getMode() == LinkMode.OneToMany || f.getLink().getMode() == LinkMode.ManyToMany) {
+            return;
         }
+
+        // Cannot read individual subfields of a group one at a time
+        if (null != f.getParent()) {
+            return;
+        }
+
+        // Convert all %{} into objname
+        String s = f.getSet().getContent();
+        s = s.replaceAll("%\\{\\}", objname);
+
+        // Convert all %{xxx} into rs.get*("xxx")
+        for (final Field field : sorm.getFields()) {
+            final String fieldName = getFieldName(field);
+            if (s.contains("%{" + fieldName + "}")) {
+                s = s.replaceAll("%\\{" + fieldName + "\\}", //
+                                 String.format("rs.%s(\"%s\")", field.getSql_type().getter, field.getSql_column()));
+            }
+        }
+
+        writeln("%s;", s);
     }
 
     /**
@@ -1344,20 +1386,21 @@ public class CodeGenerator
                             field.setNullable(nullable);
                             field.setSql_type(SQLType.valueOf(type));
 
-                            final String accessor = compileAccessor(field.getGet().getContent(), RHS);
+                            final String accessor = compileAccessor(field, field.getGet().getContent(), RHS);
                             dumpSet(field, arg++, accessor);
                             wroteSet = true;
                         }
                     }
                     else {
                         for (final Field field : sorm.getFields()) {
-                            if (start.startsWith("%{" + field.getName() + "}")) {
-                                final String accessor = compileAccessor(field.getGet().getContent(), objname);
+                            final String fieldName = getFieldName(field);
+                            if (start.startsWith("%{" + fieldName + "}")) {
+                                final String accessor = compileAccessor(field, field.getGet().getContent(), objname);
                                 dumpSet(field, arg++, accessor);
                                 wroteSet = true;
                             }
-                            else if (start.startsWith("%{1." + field.getName() + "}")) {
-                                final String accessor = compileAccessor(field.getGet().getContent(), LHS);
+                            else if (start.startsWith("%{1." + fieldName + "}")) {
+                                final String accessor = compileAccessor(field, field.getGet().getContent(), LHS);
                                 dumpSet(field, arg++, accessor);
                                 wroteSet = true;
                             }
@@ -1399,7 +1442,7 @@ public class CodeGenerator
                         if (start.startsWith("%{" + param.getName() + "}")) {
                             // FIXME: Allow for nullable parameters, then use
                             // something like dumpSet() to test for it
-                            final String accessor = compileAccessor(param.getSet().getContent(), param.getName());
+                            final String accessor = compileAccessor(null, param.getSet().getContent(), param.getName());
                             writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
                             writeln("ps.%s(%d, %s);", param.getSql_type().setter, arg++, accessor);
                             wroteSet = true;
@@ -1410,6 +1453,67 @@ public class CodeGenerator
         }
 
         return wroteSet;
+    }
+
+    /**
+     * Get a group-safe field name safe for use as a Java identifier.
+     * 
+     * @param field The field whose name to get.
+     * @return A Java-safe name for the field.
+     */
+    private String getSafeFieldName(final Field field)
+    {
+        return getFieldName(field).replaceAll("\\.", "_");
+    }
+
+    /**
+     * Get a group-safe field name for use in pre-compiled SQL.
+     * 
+     * @param field The field.
+     * @return The name of the field.
+     */
+    private String getFieldName(final Field field)
+    {
+        final Field parent = getParentField(field);
+        if (null == parent) {
+            return field.getName();
+        }
+        else {
+            return getFieldName(parent) + "." + field.getName();
+        }
+    }
+
+    /**
+     * Find the parent field for the given field.
+     * 
+     * @param field The field whose parent to find.
+     * @return The parent field, or <code>null</code> if the either the field
+     *         was <code>null</code>, or it did not have a parent.
+     */
+    private Field getParentField(final Field field)
+    {
+        if (null == field) {
+            return null;
+        }
+        else if (null == field.getParent()) {
+            return null;
+        }
+        else {
+            Field parent = null;
+            for (final Field f : sorm.getFields()) {
+                if (f.getName().equals(field.getParent())) {
+                    parent = f;
+                    break;
+                }
+            }
+
+            if (null == parent) {
+                throw new IllegalStateException("Field " + field.getName() + " specifies non-existent parent field " +
+                                                field.getParent());
+            }
+
+            return parent;
+        }
     }
 
     /**

@@ -96,6 +96,8 @@ public class XMLParser
             field.setSql_column(eField.getAttributeValue("sql-column", field.getSql_column()));
             field.setNullable(checkBoolean(eField.getAttributeValue("nullable"), field.isNullable()));
             field.setFromSuper(checkBoolean(eField.getAttributeValue("from-super"), field.isFromSuper()));
+            field.setGroup(checkBoolean(eField.getAttributeValue("group"), field.isGroup()));
+            field.setParent(eField.getAttributeValue("parent", field.getParent()));
 
             LOG.debug("Reading field " + field.getName());
 

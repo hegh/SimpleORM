@@ -15,6 +15,8 @@ public class Field
     private String sql_column; // Default returned by getter
     private boolean nullable = false;
     private boolean from_super = false;
+    private boolean group = false;
+    private String parent;
 
     private final FieldGetter get = new FieldGetter(this);
     private final FieldSetter set = new FieldSetter(this);
@@ -116,6 +118,26 @@ public class Field
     public void setFromSuper(final boolean fromSuper)
     {
         from_super = fromSuper;
+    }
+
+    public boolean isGroup()
+    {
+        return group;
+    }
+
+    public void setGroup(final boolean group)
+    {
+        this.group = group;
+    }
+
+    public String getParent()
+    {
+        return parent;
+    }
+
+    public void setParent(final String parent)
+    {
+        this.parent = parent;
     }
 
     public FieldGetter getGet()

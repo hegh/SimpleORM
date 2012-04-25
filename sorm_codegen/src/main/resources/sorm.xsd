@@ -76,6 +76,8 @@
         default="false">
       </xsd:attribute>
       <xsd:attribute name="from-super" type="xsd:boolean" use="optional" default="false"></xsd:attribute>
+      <xsd:attribute name="group" type="xsd:boolean" default="false"></xsd:attribute>
+      <xsd:attribute name="parent" type="xsd:string"></xsd:attribute>
     </xsd:complexType>
     <xsd:complexType name="getter">
       <xsd:simpleContent>
