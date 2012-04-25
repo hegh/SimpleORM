@@ -10,6 +10,34 @@
 
     <field type="String" name="name" sql-type="String" />
 
+    <field type="Address" name="address" group="true">
+        <set>%{}.setAddress(new Address(%{address.number}, %{address.street}, %{address.apartment}, %{address.city}, %{address.state}, %{address.zipcode}))</set>
+    </field>
+
+    <field type="String" name="number" parent="address" sql-column="addr_number">
+        <get>%{}.getNumber()</get>
+    </field>
+
+    <field type="String" name="street" parent="address" sql-column="addr_street">
+        <get>%{}.getStreet()</get>
+    </field>
+
+    <field type="String" name="apartment" parent="address" sql-column="addr_apt" nullable="true">
+        <get>%{}.getApartment()</get>
+    </field>
+
+    <field type="String" name="city" parent="address" sql-column="addr_city">
+        <get>%{}.getCity()</get>
+    </field>
+
+    <field type="String" name="state" parent="address" sql-column="addr_state">
+        <get>%{}.getState()</get>
+    </field>
+
+    <field type="String" name="zipcode" parent="address" sql-column="addr_zip">
+        <get>%{}.getZipcode()</get>
+    </field>
+
     <field type="Integer" name="mother" nullable="true">
         <link mode="ManyToOne" key-type="Integer" type="Person" />
     </field>
@@ -96,8 +124,13 @@ delete
 
     <create>
         <c>
-insert into person (name,    mother,    father,    sex,       dob,    spouse)
-            values (%{name}, %{mother}, %{father}, %{gender}, %{dob}, %{spouse})
+        <!-- TODO: Insert, read, and update address info, and add another query (byAddress) -->
+insert into person (name,    mother,    father,    sex,       dob,    spouse,
+                    addr_number,       addr_street,       addr_apt,
+                    addr_city,       addr_state,       addr_zip)
+            values (%{name}, %{mother}, %{father}, %{gender}, %{dob}, %{spouse},
+                    %{address.number}, %{address.street}, %{address.apartment},
+                    %{address.city}, %{address.state}, %{address.zipcode})
         </c>
     </create>
 
@@ -120,7 +153,13 @@ select name,
        father,
        sex,
        dob,
-       spouse
+       spouse,
+       addr_number,
+       addr_street,
+       addr_apt,
+       addr_city,
+       addr_state,
+       addr_zip
   from person
  where id = %{}
         </r>
@@ -134,7 +173,13 @@ update person
        father = %{father},
        sex = %{gender},
        dob = %{dob},
-       spouse = %{spouse}
+       spouse = %{spouse},
+       addr_number = %{address.number},
+       addr_street = %{address.street},
+       addr_apt = %{address.apartment},
+       addr_city = %{address.city},
+       addr_state = %{address.state},
+       addr_zip = %{address.zipcode}
  where id = %{id}
         </u>
     </update>
@@ -147,19 +192,38 @@ delete
         </d>
     </delete>
 
-    <query type="Person" name="getByGender">
+    <query name="getByGender">
         <param type="String" name="gender" />
         <q>
             select id from person where sex = %{gender}
         </q>
     </query>
 
-    <query type="Person" name="getByDob">
+    <query name="getByDob">
         <param type="java.util.Date" name="dob" sql-type="Date">
             <set>new java.sql.Date(%{}.getTime())</set>
         </param>
         <q>
             select id from person where dob = %{dob}
+        </q>
+    </query>
+
+    <query name="getByAddress">
+        <param type="String" name="number" />
+        <param type="String" name="street" />
+        <param type="String" name="apartment" />
+        <param type="String" name="city" />
+        <param type="String" name="state" />
+        <param type="String" name="zipcode" />
+        <q>
+select id
+  from person
+ where addr_number = %{number}
+   and addr_street = %{street}
+   and addr_apt = %{apartment}
+   and addr_city = %{city}
+   and addr_state = %{state}
+   and addr_zip = %{zipcode}
         </q>
     </query>
 </sorm>
