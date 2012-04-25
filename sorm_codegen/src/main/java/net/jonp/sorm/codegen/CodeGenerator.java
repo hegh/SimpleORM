@@ -290,7 +290,6 @@ public class CodeGenerator
         writeln("{");
 
         dumpPreparedStatement(sorm.getCreate(), OBJ);
-        writeln();
 
         writeln("ps.executeUpdate();");
         writeln("}");
@@ -321,7 +320,6 @@ public class CodeGenerator
         writeln("{");
 
         dumpPreparedStatement(sorm.getPk(), null);
-        writeln();
 
         writeln("final ResultSet rs = ps.executeQuery();");
         writeln("try");
@@ -971,7 +969,6 @@ public class CodeGenerator
 
         writeln("final Collection<%s> %ss= new LinkedList<%s>();", primary.getType(), KEY, primary.getType());
         dumpPreparedStatement(nq);
-        writeln();
 
         writeln("final ResultSet rs = ps.executeQuery();");
         writeln("try");
@@ -1445,6 +1442,7 @@ public class CodeGenerator
                             final String accessor = compileAccessor(null, param.getSet().getContent(), param.getName());
                             writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
                             writeln("ps.%s(%d, %s);", param.getSql_type().setter, arg++, accessor);
+                            writeln();
                             wroteSet = true;
                         }
                     }
@@ -1541,6 +1539,8 @@ public class CodeGenerator
         if (field.isNullable()) {
             writeln("}");
         }
+
+        writeln();
     }
 
     private void incIndent()
