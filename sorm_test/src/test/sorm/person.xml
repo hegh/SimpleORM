@@ -9,7 +9,7 @@
 
     <field type="Integer" name="id" primary="true" />
 
-    <field type="String" name="name" sql-type="String">
+    <field type="String" name="name">
         <get override="true" />
     </field>
 
@@ -21,7 +21,7 @@
         <link mode="ManyToOne" key-type="Integer" type="Person" />
     </field>
 
-    <field type="String" name="gender" sql-type="String" sql-column="sex">
+    <field type="String" name="gender" sql-column="sex">
         <get override="true" />
     </field>
 

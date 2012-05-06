@@ -8,7 +8,7 @@
 
     <field type="Integer" name="id" primary="true" />
 
-    <field type="String" name="name" sql-type="String" />
+    <field type="String" name="name" />
 
     <field type="Address" name="address" group="true">
         <set>%{}.setAddress(new Address(%{address.number}, %{address.street}, %{address.apartment}, %{address.city}, %{address.state}, %{address.zipcode}))</set>
@@ -46,7 +46,7 @@
         <link mode="ManyToOne" key-type="Integer" type="Person" />
     </field>
 
-    <field type="String" name="gender" sql-type="String" sql-column="sex" />
+    <field type="String" name="gender" sql-column="sex" />
 
     <field type="java.util.Date" name="dob" sql-type="Date">
         <get>new java.sql.Date(%{}.getDob().getTime())</get>
