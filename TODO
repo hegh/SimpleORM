@@ -2,8 +2,10 @@ Future enhancements for Sorm:
  * Junit tests. More are always better.
  * Plugins for other build systems.
  * Documentation, especially of the input XML format.
- * Testing corner cases, such as skipping the optional properties on links, or
-   providing values for defaulted fields.
+ * Testing corner cases, such as skipping the optional properties on links,
+   providing values for defaulted fields, or having multiple grouped fields on
+   one object.
+ * Allow multiple layers of grouped fields.
  * Verifying that error messages make sense when leaving out required fields.
    For example, what happens if you do not have a primary field defined for an
    object?
