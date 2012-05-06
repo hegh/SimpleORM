@@ -13,6 +13,32 @@
         <get override="true" />
     </field>
 
+    <field type="PhysicalDescription" name="description" group="true">
+        <set>
+%{}.setDescription(new PhysicalDescription(%{description.height},
+                                           %{description.weight},
+                                           Color.findByAbbreviation(%{description.hairColor}),
+                                           Color.findByAbbreviation(%{description.eyeColor}),
+                                           Color.findByAbbreviation(%{description.hairColorAlt})))
+        </set>
+    </field>
+
+    <field type="Integer" name="height" parent="description" />
+
+    <field type="Double" name="weight" parent="description" />
+
+    <field type="Color" name="hairColor" sql-type="Char" sql-column="hair_color" parent="description">
+        <get>%{}.getHairColor().getAbbreviation()</get>
+    </field>
+
+    <field type="Color" name="eyeColor" sql-type="Char" sql-column="eye_color" parent="description">
+        <get>%{}.getEyeColor().getAbbreviation()</get>
+    </field>
+
+    <field type="Color" name="hairColorAlt" sql-type="Char" sql-column="hair_color_alt" nullable="true" parent="description">
+        <get>%{}.getHairColorAlt() == null ? null : %{}.getHairColorAlt().getAbbreviation()</get>
+    </field>
+
     <field type="Integer" name="mother" nullable="true">
         <link mode="ManyToOne" key-type="Integer" type="Person" />
     </field>
@@ -104,8 +130,28 @@ delete
 
     <create>
         <c>
-insert into person (name,    mother,    father,    sex,       dob,    spouse)
-            values (%{name}, %{mother}, %{father}, %{gender}, %{dob}, %{spouse})
+insert into person (name,
+                    mother,
+                    father,
+                    sex,
+                    dob,
+                    spouse,
+                    height,
+                    weight,
+                    hair_color,
+                    eye_color,
+                    hair_color_alt)
+            values (%{name},
+                    %{mother},
+                    %{father},
+                    %{gender},
+                    %{dob},
+                    %{spouse},
+                    %{description.height},
+                    %{description.weight},
+                    %{description.hairColor},
+                    %{description.eyeColor},
+                    %{description.hairColorAlt})
         </c>
     </create>
 
@@ -131,7 +177,12 @@ select name,
        father,
        sex,
        dob,
-       spouse
+       spouse,
+       height,
+       weight,
+       hair_color,
+       eye_color,
+       hair_color_alt
   from person
  where id = %{}
         </r>
@@ -145,7 +196,12 @@ update person
        father = %{father},
        sex = %{gender},
        dob = %{dob},
-       spouse = %{spouse}
+       spouse = %{spouse},
+       height = %{description.height},
+       weight = %{description.weight},
+       hair_color = %{description.hairColor},
+       eye_color = %{description.eyeColor},
+       hair_color_alt = %{description.hairColorAlt}
  where id = %{id}
         </u>
     </update>

@@ -6,6 +6,11 @@ CREATE TABLE person (
   sex TEXT NOT NULL,
   dob TEXT NOT NULL,
   spouse INTEGER,
+  height INTEGER NOT NULL,
+  weight DOUBLE NOT NULL,
+  hair_color CHAR(2) NOT NULL,
+  eye_color CHAR(2) NOT NULL,
+  hair_color_alt CHAR(2),
 
   FOREIGN KEY (mother) REFERENCES person (id) ON DELETE SET NULL ON UPDATE CASCADE,
   FOREIGN KEY (father) REFERENCES person (id) ON DELETE SET NULL ON UPDATE CASCADE,

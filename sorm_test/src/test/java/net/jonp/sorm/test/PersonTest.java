@@ -324,6 +324,21 @@ public class PersonTest
                 objs[i].setGender("female");
             }
 
+            // Height range: 145 - 200 cm in increments of 5 cm
+            // Weight range: 50 - 125 kg in increments of 2.5 kg
+            final PhysicalDescription description = new PhysicalDescription();
+            description.setHeight(145 + (i * 5) % 55);
+            description.setWeight(50 + (i * 2.5 % 75));
+            description.setHairColor(Color.values()[i % Color.values().length]);
+            description.setEyeColor(Color.values()[(i * 2) % Color.values().length]);
+
+            if (i % 4 == 0) {
+                // One in four has dyed hair
+                description.setHairColorAlt(Color.values()[(i + 1) % Color.values().length]);
+            }
+
+            objs[i].setDescription(description);
+
             dobcal.add(Calendar.DAY_OF_YEAR, i);
         }
 
@@ -359,6 +374,22 @@ public class PersonTest
             else {
                 objs[i].setGender("female");
             }
+
+
+            // Height range: 145 - 200 cm in increments of 5 cm
+            // Weight range: 50 - 125 kg in increments of 2.5 kg
+            final PhysicalDescription description = new PhysicalDescription();
+            description.setHeight(145 + (i * 5) % 55);
+            description.setWeight(50 + (i * 2.5 % 75));
+            description.setHairColor(Color.values()[i % Color.values().length]);
+            description.setEyeColor(Color.values()[(i * 2) % Color.values().length]);
+
+            if (i % 4 == 0) {
+                // One in four has dyed hair
+                description.setHairColorAlt(Color.values()[(i + 1) % Color.values().length]);
+            }
+
+            objs[i].setDescription(description);
 
             PersonLib.create(orm, objs[i]);
 

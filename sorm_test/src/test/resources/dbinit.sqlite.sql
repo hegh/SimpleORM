@@ -5,7 +5,12 @@ CREATE TABLE person (
   father INTEGER REFERENCES person (id) ON DELETE SET NULL ON UPDATE CASCADE,
   sex TEXT NOT NULL,
   dob TEXT NOT NULL,
-  spouse INTEGER REFERENCES person (id) ON DELETE SET NULL ON UPDATE CASCADE
+  spouse INTEGER REFERENCES person (id) ON DELETE SET NULL ON UPDATE CASCADE,
+  height INTEGER NOT NULL,
+  weight REAL NOT NULL,
+  hair_color CHAR(2) NOT NULL,
+  eye_color CHAR(2) NOT NULL,
+  hair_color_alt CHAR(2)
 );
 
 CREATE TABLE friendmap (
