@@ -31,6 +31,8 @@ public abstract class PersonSuper
 
     public abstract void setFriends(Collection<Person> friends);
 
+    public abstract PhysicalDescription getDescription();
+
     void addFriend(final Person friend)
     {
         Collection<Person> friends = getFriends();
@@ -60,11 +62,18 @@ public abstract class PersonSuper
         }
         else if (o instanceof PersonSuper) {
             final PersonSuper p = (PersonSuper)o;
-            return (equal(getName(), p.getName()) && equal(getDob(), p.getDob()) && equal(getGender(), p.getGender()));
+            return (equal(getName(), p.getName()) && equal(getDob(), p.getDob()) && equal(getGender(), p.getGender()) && equal(getDescription(),
+                                                                                                                               p.getDescription()));
         }
         else {
             return false;
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return String.format("%s (%s) born %s looks like %s", getName(), getGender(), getDob(), getDescription());
     }
 
     @Override

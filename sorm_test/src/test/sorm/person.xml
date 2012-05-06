@@ -14,6 +14,7 @@
     </field>
 
     <field type="PhysicalDescription" name="description" group="true">
+        <get override="true" />
         <set>
 %{}.setDescription(new PhysicalDescription(%{description.height},
                                            %{description.weight},

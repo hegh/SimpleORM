@@ -85,4 +85,52 @@ public class PhysicalDescription
     {
         _hairColorAlt = hairColorAlt;
     }
+
+    @Override
+    public String toString()
+    {
+        return String.format("H: %d, W: %.02f, HC: %s, EC: %s, HD: %s", getHeight(), getWeight(), getHairColor(), getEyeColor(),
+                             getHairColorAlt());
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return toString().hashCode();
+    }
+
+    @Override
+    public boolean equals(final Object rhs)
+    {
+        if (null == rhs) {
+            return false;
+        }
+        else if (rhs instanceof PhysicalDescription) {
+            final PhysicalDescription pd = (PhysicalDescription)rhs;
+            return (equal(getHeight(), pd.getHeight()) && equal(getWeight(), pd.getWeight(), .001) &&
+                    equal(getHairColor(), pd.getHairColor()) && equal(getEyeColor(), pd.getEyeColor()) && equal(getHairColorAlt(),
+                                                                                                                pd.getHairColorAlt()));
+        }
+        else {
+            return false;
+        }
+    }
+
+    private static boolean equal(final Object a, final Object b)
+    {
+        if (a == b) {
+            return true;
+        }
+        else if (null == a || null == b) {
+            return false;
+        }
+        else {
+            return a.equals(b);
+        }
+    }
+
+    private static boolean equal(final double a, final double b, final double delta)
+    {
+        return (Math.abs(a - b) <= delta);
+    }
 }

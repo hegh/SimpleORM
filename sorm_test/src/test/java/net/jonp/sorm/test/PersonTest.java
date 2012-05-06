@@ -171,12 +171,36 @@ public class PersonTest
         person.setName("newname");
         person.setGender("trans");
         person.setDob(today);
+
+        final int height = person.getDescription().getHeight() + 10;
+        final double weight = person.getDescription().getWeight() + 1.25;
+        person.getDescription().setHeight(height);
+        person.getDescription().setWeight(weight);
+
+        person.getDescription().setHairColor(Color.White);
+        person.getDescription().setEyeColor(Color.Violet);
+
+        final Color alt;
+        if (null == person.getDescription().getHairColorAlt()) {
+            alt = Color.Blue;
+        }
+        else {
+            alt = null;
+        }
+        person.getDescription().setHairColorAlt(alt);
+
+
         Person.Orm.update(session, person);
 
         final Person test = Person.Orm.read(session, person.getId());
         assertEquals("newname", test.getName());
         assertEquals("trans", test.getGender());
         assertEquals(today, test.getDob());
+        assertEquals(height, test.getDescription().getHeight());
+        assertEquals(weight, test.getDescription().getWeight(), 0.001);
+        assertEquals(Color.White, test.getDescription().getHairColor());
+        assertEquals(Color.Violet, test.getDescription().getEyeColor());
+        assertEquals(alt, test.getDescription().getHairColorAlt());
     }
 
     @Test
@@ -193,6 +217,17 @@ public class PersonTest
             person.setName("Test");
             person.setGender("trans");
             person.setDob(today);
+            person.getDescription().setHeight(person.getDescription().getHeight() + 10);
+            person.getDescription().setWeight(person.getDescription().getWeight() + 1.25);
+            person.getDescription().setHairColor(Color.White);
+            person.getDescription().setEyeColor(Color.Violet);
+
+            if (null == person.getDescription().getHairColorAlt()) {
+                person.getDescription().setHairColorAlt(Color.Blue);
+            }
+            else {
+                person.getDescription().setHairColorAlt(null);
+            }
         }
 
         Person.Orm.update(session, people);
