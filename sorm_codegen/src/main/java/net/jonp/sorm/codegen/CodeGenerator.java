@@ -999,6 +999,10 @@ public class CodeGenerator
                 continue;
             }
 
+            if (null != field.getParent()) {
+                continue;
+            }
+
             final String fieldName = getSafeFieldName(field);
             switch (field.getLink().getMode()) {
                 case None:
@@ -1524,9 +1528,9 @@ public class CodeGenerator
      */
     private void dumpSet(final Field field, final int arg, final String accessor)
     {
-        writeln("LOG.debug(\"  Param %d: \" + %s);", arg, accessor);
+        writeln("LOG.debug(\"  Param %d: \" + (%s));", arg, accessor);
         if (field.isNullable()) {
-            writeln("if (null == %s)", accessor);
+            writeln("if (null == (%s))", accessor);
             writeln("{");
             writeln("ps.setNull(%d, Types.%s);", arg, field.getSql_type().sqltype);
             writeln("}");
