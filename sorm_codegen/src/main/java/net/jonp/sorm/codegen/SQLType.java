@@ -29,6 +29,9 @@ public enum SQLType
     /** An array of bytes. */
     ByteA("byte[]", "getBytes", "setBytes", "VARBINARY"),
 
+    /** A static length character string. */
+    Char("String", "getString", "setString", "CHAR"),
+
     /** Deals with Readers. */
     CharStream("java.io.Reader", "getCharacterStream", "setCharacterStream", null),
 
