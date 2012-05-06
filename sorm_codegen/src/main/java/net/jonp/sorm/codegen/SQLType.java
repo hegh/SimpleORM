@@ -89,9 +89,6 @@ public enum SQLType
     /** A URL. */
     URL("java.net.URL", "getURL", "setURL", "DATALINK"),
 
-    /** An internal value used to call the pk function. */
-    _PK_GETTER(null, null, null, null),
-
     // Autoformatter hint
     ;
 
