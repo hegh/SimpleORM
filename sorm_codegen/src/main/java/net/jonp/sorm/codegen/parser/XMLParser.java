@@ -90,6 +90,18 @@ public class XMLParser
             final Field field = new Field();
             field.setAccessor(eField.getAttributeValue("accessor", field.getAccessor()));
             field.setType(eField.getAttributeValue("type", field.getType()));
+
+            // Try to resolve the type to a SQL type; if it matches, use the SQL
+            // type's typeName instead
+            try {
+                final SQLType sqlType = SQLType.valueOf(field.getType());
+                field.setType(sqlType.typeName);
+                field.setSql_type(sqlType);
+            }
+            catch (final IllegalArgumentException iae) {
+                // Nope, didn't resolve, don't bother
+            }
+
             field.setName(eField.getAttributeValue("name", field.getName()));
             field.setPrimary(checkBoolean(eField.getAttributeValue("primary"), field.isPrimary()));
             field.setSql_type(findSQLType(eField.getAttributeValue("sql-type"), field.getSql_type()));
