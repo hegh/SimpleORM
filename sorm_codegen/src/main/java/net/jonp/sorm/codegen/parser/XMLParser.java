@@ -12,6 +12,7 @@ import net.jonp.sorm.codegen.model.FieldGetter;
 import net.jonp.sorm.codegen.model.FieldLink;
 import net.jonp.sorm.codegen.model.FieldLinkCollection;
 import net.jonp.sorm.codegen.model.FieldSetter;
+import net.jonp.sorm.codegen.model.IDGenerator;
 import net.jonp.sorm.codegen.model.NamedQuery;
 import net.jonp.sorm.codegen.model.Query;
 import net.jonp.sorm.codegen.model.QueryParam;
@@ -110,6 +111,7 @@ public class XMLParser
             field.setFromSuper(checkBoolean(eField.getAttributeValue("from-super"), field.isFromSuper()));
             field.setGroup(checkBoolean(eField.getAttributeValue("group"), field.isGroup()));
             field.setParent(eField.getAttributeValue("parent", field.getParent()));
+            field.setGenerator(findGenerator(eField.getAttributeValue("generator"), field.getGenerator()));
 
             LOG.debug("Reading field " + field.getName());
 
@@ -289,6 +291,21 @@ public class XMLParser
         if (null != input) {
             try {
                 return SQLType.valueOf(input);
+            }
+            catch (final IllegalArgumentException iae) {
+                return def;
+            }
+        }
+        else {
+            return def;
+        }
+    }
+
+    private IDGenerator findGenerator(final String input, final IDGenerator def)
+    {
+        if (null != input) {
+            try {
+                return IDGenerator.valueOf(input);
             }
             catch (final IllegalArgumentException iae) {
                 return def;

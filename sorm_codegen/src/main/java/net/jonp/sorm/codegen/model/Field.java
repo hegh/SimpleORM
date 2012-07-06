@@ -17,6 +17,8 @@ public class Field
     private boolean from_super = false;
     private boolean group = false;
     private String parent;
+    private IDGenerator generator = IDGenerator.Post; // Default returned by
+                                                      // getter
 
     private final FieldGetter get = new FieldGetter(this);
     private final FieldSetter set = new FieldSetter(this);
@@ -153,5 +155,15 @@ public class Field
     public FieldLink getLink()
     {
         return link;
+    }
+
+    public IDGenerator getGenerator()
+    {
+        return generator;
+    }
+
+    public void setGenerator(final IDGenerator gen)
+    {
+        generator = gen;
     }
 }
