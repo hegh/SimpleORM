@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.jonp.sorm.codegen.model.Field;
+import net.jonp.sorm.codegen.model.IDGenerator;
 import net.jonp.sorm.codegen.model.NamedQuery;
 import net.jonp.sorm.codegen.model.Query;
 import net.jonp.sorm.codegen.model.QueryParam;
@@ -233,6 +234,8 @@ public class CodeGenerator
 
     private void dumpOrmCreate()
     {
+        final Field primary = sorm.getPrimaryField();
+
         writeln("@Override");
         writeln("public void create(final %s... %ss)", sorm.getName(), OBJ);
         writeln("throws SQLException");
@@ -289,6 +292,14 @@ public class CodeGenerator
         writeln("throws SQLException");
         writeln("{");
 
+        if (IDGenerator.Pre == primary.getGenerator() && sorm.getPk().size() > 0) {
+            writeln();
+            writeln("final %s %s = getPk(session);", primary.getType(), KEY);
+            writeln("%s.%s(%s);", OBJ, primary.getSet().getName(), KEY);
+            writeln();
+            writeln("session.cacheAdd(%s.class, %s, %s);", sorm.getName(), KEY, OBJ);
+        }
+
         dumpPreparedStatement(sorm.getCreate(), OBJ);
 
         writeln("ps.executeUpdate();");
@@ -298,9 +309,8 @@ public class CodeGenerator
         writeln("ps.close();");
         writeln("}");
 
-        if (sorm.getPk().size() > 0) {
+        if (IDGenerator.Post == primary.getGenerator() && sorm.getPk().size() > 0) {
             writeln();
-            final Field primary = sorm.getPrimaryField();
             writeln("final %s %s = getPk(session);", primary.getType(), KEY);
             writeln("%s.%s(%s);", OBJ, primary.getSet().getName(), KEY);
             writeln();
