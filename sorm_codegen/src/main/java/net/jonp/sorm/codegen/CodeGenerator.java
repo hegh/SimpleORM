@@ -330,6 +330,7 @@ public class CodeGenerator
         writeln("{");
 
         dumpPreparedStatement(sorm.getPk(), null);
+        writeln();
 
         writeln("final ResultSet rs = ps.executeQuery();");
         writeln("try");
@@ -979,6 +980,7 @@ public class CodeGenerator
 
         writeln("final Collection<%s> %ss= new LinkedList<%s>();", primary.getType(), KEY, primary.getType());
         dumpPreparedStatement(nq);
+        writeln();
 
         writeln("final ResultSet rs = ps.executeQuery();");
         writeln("try");
@@ -1380,12 +1382,22 @@ public class CodeGenerator
                 else if ('%' == c) {
                     final String start = query.substring(i);
                     if (start.startsWith("%{}")) {
+                        if (wroteSet) {
+                            // Keep track of newlines
+                            writeln();
+                        }
+
                         dumpSet(sorm.getPrimaryField(), arg++, KEY);
                         wroteSet = true;
                     }
                     else if (start.startsWith("%{2.")) {
                         final Matcher matcher = P_RHSMAP.matcher(start);
                         if (matcher.matches()) {
+                            if (wroteSet) {
+                                // Keep track of newlines
+                                writeln();
+                            }
+
                             final String function = matcher.group(1) + matcher.group(2);
                             final boolean nullable = null == matcher.group(3) ? false : matcher.group(3).equals("nullable ");
                             final String type = matcher.group(4);
@@ -1406,11 +1418,21 @@ public class CodeGenerator
                         for (final Field field : sorm.getFields()) {
                             final String fieldName = getFieldName(field);
                             if (start.startsWith("%{" + fieldName + "}")) {
+                                if (wroteSet) {
+                                    // Keep track of newlines
+                                    writeln();
+                                }
+
                                 final String accessor = compileAccessor(field, field.getGet().getContent(), objname);
                                 dumpSet(field, arg++, accessor);
                                 wroteSet = true;
                             }
                             else if (start.startsWith("%{1." + fieldName + "}")) {
+                                if (wroteSet) {
+                                    // Keep track of newlines
+                                    writeln();
+                                }
+
                                 final String accessor = compileAccessor(field, field.getGet().getContent(), LHS);
                                 dumpSet(field, arg++, accessor);
                                 wroteSet = true;
@@ -1553,8 +1575,6 @@ public class CodeGenerator
         if (field.isNullable()) {
             writeln("}");
         }
-
-        writeln();
     }
 
     private void incIndent()
