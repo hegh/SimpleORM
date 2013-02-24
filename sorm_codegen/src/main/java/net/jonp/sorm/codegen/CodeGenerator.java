@@ -103,6 +103,7 @@ public class CodeGenerator
         writeln("import java.sql.PreparedStatement;");
         writeln("import java.sql.ResultSet;");
         writeln("import java.sql.SQLException;");
+        writeln("import java.sql.Statement;");
         writeln("import java.sql.Types;");
         writeln("import java.util.ArrayList;");
         writeln("import java.util.Arrays;");
@@ -1168,12 +1169,7 @@ public class CodeGenerator
 
                 writeln("%sif (\"%s\".equals(session.getDialect()))", els, dialect);
                 writeln("{");
-                writeln("final String sql =");
-                incIndent();
-                writeln("\"%s\";", compileSql(query.getQuery(dialect), params));
-                decIndent();
-                writeln("LOG.debug(\"SQL statement:\\n\" + sql);");
-                writeln("ps = session.getConnection().prepareStatement(sql);");
+                compileSql(query.getQuery(dialect), params);
                 writeln("}");
             }
 
@@ -1182,12 +1178,7 @@ public class CodeGenerator
         }
 
         if (hasAny) {
-            writeln("final String sql =");
-            incIndent();
-            writeln("\"%s\";", compileSql(query.getQuery("*"), params));
-            decIndent();
-            writeln("LOG.debug(\"SQL statement:\\n\" + sql);");
-            writeln("ps = session.getConnection().prepareStatement(sql);");
+            compileSql(query.getQuery("*"), params);
         }
         else {
             writeln("throw new UnknownDialectException(session.getDialect());");
@@ -1280,38 +1271,87 @@ public class CodeGenerator
         }
     }
 
-    private String compileSql(String query, final Collection<QueryParam> params)
+    private void compileSql(final String query, final Collection<QueryParam> params)
     {
-        query = query.replaceAll("%\\{\\}", "?");
-        if (params == null) {
-            for (final Field field : sorm.getFields()) {
-                if (field.isGroup()) {
-                    // Skip grouped fields because you cannot directly write
-                    // them to
-                    // the database
-                    continue;
+        // Cannot use a multi-statement query in an executeQuery, so run the
+        // first n-1 as updates, then actually assign the last as the
+        // PreparedStatement that will be used as the query
+        // FUTURE: Build each as a PreparedStatement and assign any necessary
+        // parameters
+
+        final String[] stmts = StringUtil.tokenize(query.trim(), ";", false);
+        if (stmts.length > 1) {
+            writeln("final Statement stmt = session.getConnection().createStatement();");
+            writeln("try {");
+        }
+
+        for (int i = 0; i < stmts.length; i++) {
+            String stmt = stmts[i].trim();
+            if (stmt.isEmpty()) {
+                // Don't need to worry about accidentally skipping the last one
+                // because the entire query was trimmed earlier
+                continue;
+            }
+
+            final boolean last = (i == stmts.length - 1);
+            if (last) {
+                stmt = stmt.replaceAll("%\\{\\}", "?");
+                if (params == null) {
+                    for (final Field field : sorm.getFields()) {
+                        if (field.isGroup()) {
+                            // Skip grouped fields because you cannot directly
+                            // write
+                            // them to the database
+                            continue;
+                        }
+
+                        final String fieldName = getFieldName(field);
+                        stmt = stmt.replaceAll("%\\{" + fieldName + "\\}", "?");
+                        stmt = stmt.replaceAll("%\\{1\\." + fieldName + "\\}", "?");
+                    }
+                }
+                else {
+                    for (final QueryParam param : params) {
+                        final String paramName = param.getName();
+                        stmt = stmt.replaceAll("%\\{" + paramName + "\\}", "?");
+                        stmt = stmt.replaceAll("%\\{1\\." + paramName + "\\}", "?");
+                    }
                 }
 
-                final String fieldName = getFieldName(field);
-                query = query.replaceAll("%\\{" + fieldName + "\\}", "?");
-                query = query.replaceAll("%\\{1\\." + fieldName + "\\}", "?");
+                // Search for %{2.*} references
+                stmt = stmt.replaceAll("%\\{2\\..*?:.*?\\}", "?");
+            }
+
+            // Fix embedded newlines
+            stmt = stmt.replaceAll("\r?\n", String.format("\\\\n\" +%n%s%s\"", indentString, INDENT));
+
+            writeln("final String sql%d =", i);
+            incIndent();
+            writeln("\"%s\";", stmt);
+            decIndent();
+
+            if (stmts.length > 1) {
+                writeln("LOG.debug(\"SQL statement %d:\\n\" + sql%d);", i + 1, i);
+            }
+            else {
+                writeln("LOG.debug(\"SQL statement:\\n\" + sql%d);", i);
+            }
+
+            if (last) {
+                writeln("ps = session.getConnection().prepareStatement(sql%d);", i);
+            }
+            else {
+                writeln("stmt.executeUpdate(sql%d);", i);
+                writeln();
             }
         }
-        else {
-            for (final QueryParam param : params) {
-                final String paramName = param.getName();
-                query = query.replaceAll("%\\{" + paramName + "\\}", "?");
-                query = query.replaceAll("%\\{1\\." + paramName + "\\}", "?");
-            }
+
+        if (stmts.length > 1) {
+            writeln("}");
+            writeln("finally {");
+            writeln("stmt.close();");
+            writeln("}");
         }
-
-        // Search for %{2.*} references
-        query = query.replaceAll("%\\{2\\..*?:.*?\\}", "?");
-
-        // Fix embedded newlines
-        query = query.replaceAll("\r?\n", String.format("\\\\n\" +%n" + indentString + "\""));
-
-        return query;
     }
 
     private String compileAccessor(final Field field, final String query, final String objName)

@@ -1,5 +1,13 @@
-CREATE TABLE person (
+CREATE TABLE object (
   id INTEGER PRIMARY KEY ASC AUTOINCREMENT,
+  type TEXT NOT NULL
+);
+
+CREATE INDEX object_type_idx ON object (type);
+
+
+CREATE TABLE person (
+  id INTEGER PRIMARY KEY REFERENCES object (id) ON DELETE CASCADE ON UPDATE CASCADE,
   name TEXT NOT NULL,
   mother INTEGER REFERENCES person (id) ON DELETE SET NULL ON UPDATE CASCADE,
   father INTEGER REFERENCES person (id) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -18,5 +26,5 @@ CREATE TABLE friendmap (
   person_id2 INTEGER NOT NULL REFERENCES person (id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE INDEX friendmap_id1 ON friendmap (person_id1);
-CREATE INDEX friendmap_id2 ON friendmap (person_id2);
+CREATE INDEX friendmap_person_id1_idx ON friendmap (person_id1);
+CREATE INDEX friendmap_person_id2_idx ON friendmap (person_id2);

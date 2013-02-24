@@ -7,7 +7,7 @@
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xsi:schemaLocation="http://jonp.net/sorm http://jonp.net/sorm/sorm.xsd">
 
-    <field type="Integer" name="id" primary="true" />
+    <field type="Integer" name="id" primary="true" generator="Pre" />
 
     <field type="String" name="name">
         <get override="true" />
@@ -101,6 +101,9 @@ select person_id2 as id
                 </read>
                 <create>
                     <c dialect="sqlite">
+<!-- SQLite needs us to turn on foreign keys when we want to use them -->
+pragma foreign_keys = on;
+
 <!-- SQLite only keeps a single pair because it does not support multiple-insert -->
 insert
   into friendmap
@@ -131,7 +134,8 @@ delete
 
     <create>
         <c>
-insert into person (name,
+insert into person (id,
+                    name,
                     mother,
                     father,
                     sex,
@@ -142,7 +146,8 @@ insert into person (name,
                     hair_color,
                     eye_color,
                     hair_color_alt)
-            values (%{name},
+            values (%{id},
+                    %{name},
                     %{mother},
                     %{father},
                     %{gender},
@@ -158,16 +163,21 @@ insert into person (name,
 
     <pk>
         <pk dialect="h2">
-            select currval('person_id_seq') as id
+insert into object (type) values ('person');
+select currval('object_id_seq') as id
         </pk>
         <pk dialect="mysql">
-            select last_insert_id() as id
+insert into object (type) values ('person');
+select last_insert_id() as id
         </pk>
         <pk dialect="postgresql">
-            select currval('person_id_seq') as id
+insert into object (type) values ('person');
+select currval('person_id_seq') as id
         </pk>
         <pk dialect="sqlite">
-            select last_insert_rowid() as id
+pragma foreign_keys = on;
+insert into object (type) values ('person');
+select last_insert_rowid() as id
         </pk>
     </pk>
 
@@ -208,9 +218,16 @@ update person
     </update>
 
     <delete>
-        <d>
+        <d dialect="sqlite">
+<!-- Need to turn on foreign keys so this will work under SQLite -->
+pragma foreign_keys = on;
 delete
-  from person
+  from object
+ where id = %{id}
+        </d>
+        <d dialect="*">
+delete
+  from object
  where id = %{id}
         </d>
     </delete>
