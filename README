@@ -53,4 +53,8 @@ When writing Java code, please conform to the formatter rules in CodeFormat.xml,
 and the import ordering in ImportOrganization.importorder (these are Eclipse
 configuration files). Additionally, please remove all trailing whitespace from
 all lines and use four spaces for each level of indentation; do not use tabs.
+It is acceptable to have a single space at the end of the line in multi-line
+comments, but that is simply because I have not yet figured out how to get
+Eclipse to remove it automatically.
+
 
