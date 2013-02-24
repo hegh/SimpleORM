@@ -671,7 +671,7 @@ public class CodeGenerator
         writeln("{");
         writeln("for (final %s %s : %ss)", sorm.getName(), OBJ, OBJ);
         writeln("{");
-        writeln("updateSingle(ps, %s);", OBJ);
+        writeln("updateSingle(session, ps, %s);", OBJ);
         writeln("}");
         writeln("}");
         writeln("finally");
@@ -697,7 +697,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
-        writeln("static void updateSingle(final PreparedStatement ps, final %s %s)", sorm.getName(), OBJ);
+        writeln("static void updateSingle(final SormSession session, final PreparedStatement ps, final %s %s)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
         populatePreparedStatement(sorm.getUpdate(), OBJ);
@@ -754,7 +754,7 @@ public class CodeGenerator
         writeln("{");
         writeln("for (final %s %s : %ss)", sorm.getName(), OBJ, OBJ);
         writeln("{");
-        writeln("deleteSingle(ps, %s);", OBJ);
+        writeln("deleteSingle(session, ps, %s);", OBJ);
         writeln("session.cacheDel(%s.class, %s.%s());", sorm.getName(), OBJ, primary.getGet().getName());
         writeln("}");
         writeln("}");
@@ -781,7 +781,7 @@ public class CodeGenerator
         writeln("}");
         writeln();
 
-        writeln("static void deleteSingle(final PreparedStatement ps, final %s %s)", sorm.getName(), OBJ);
+        writeln("static void deleteSingle(final SormSession session, final PreparedStatement ps, final %s %s)", sorm.getName(), OBJ);
         writeln("throws SQLException");
         writeln("{");
         populatePreparedStatement(sorm.getDelete(), OBJ);
