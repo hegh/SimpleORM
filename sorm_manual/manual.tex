@@ -64,8 +64,15 @@ Top-level: sorm
         \item @primary [Boolean, Optional, Default ``false''] Whether this is
               the primary identifier for the object in the database. Exactly one
               primary field is required, and only one is supported.
+        \item @generator [String, Optional, Default ``Post''] For primary
+              fields, whether to use the primary key accessor before (``Pre'')
+              or after (``Post'') the insertion of the object into the database.
+              ``Post'' is standard, where you insert the object row into one
+              table and then grab the generated ID number or current value of a
+              sequence. ``Pre'' is useful if you have a generic ``object'' table
+              that is used for generating all object identifiers.
         \item @sql-type [String, Optional, Default @type] The type of the field.
-              Must be the name of one of the enum constants in
+              Must be the name of one of the enum constants in\\
               net.jonp.sorm.codegen.SQLType.
         \item @sql-column [String, Optional, Default @name] The name of the
               column in the database.
@@ -76,6 +83,15 @@ Top-level: sorm
               generated class. If true, no field declaration or accessors will
               be emitted, but the field will be accessible through SQL
               statements.
+        \item @group [Boolean, Optional, Default false] Whether this is a
+              ``grouped'' field. A grouped field acts like a one-to-one mapping,
+              but is stored in a series of columns in the same table as the
+              object associated with it. The field itself must not be nullable,
+              as there is no single place to look for a null value, but its
+              individual fields may be nullable.
+        \item @parent [String, Optional, Default ``''] If this field is one of
+              the fields within a grouped field, this specifies the name of the
+              field that includes this field in its group.
         \item get[0..1] Describes both the getter for this field, and the way to
               convert from the field type to the SQL type.
         \begin{enumerate}
@@ -95,8 +111,11 @@ Top-level: sorm
                   for the column. The object being accessed may be referenced
                   as ``\%\{\}''. For example, if your field is a java.util.Date,
                   but your SQL column is a java.sql.Timestamp, your getter text
-                  should probably be something like
+                  should probably be something like\\
                   ``new java.sql.Timestamp(\%\{\}.getDate().getTime())''.
+                  Similarly, the sub-fields of a grouped field may be referenced
+                  as\\
+                  ``\%\{groupName.fieldName\}''.
         \end{enumerate}
         \item set[0..1] Describes both the setter for this field, and the way to
               convert from the SQL type to the field type.
@@ -120,8 +139,10 @@ Top-level: sorm
                   referenced as ``\%\{fieldName\}''. For example, if your field
                   is a java.util.Date, but your SQL column is a
                   java.sql.Timestamp, your setter text should probably be
-                  something like
+                  something like\\
                   ``\%\{\}.setDate(new java.util.Date(\%\{date\}.getTime()))''.
+                  Similarly, the sub-fields of a grouped field may be referenced
+                  as ``\%\{groupName.fieldName\}''.
         \end{enumerate}
         \item link[0..1] If this is a linked/mapped type, describes the link.
         \begin{enumerate}
@@ -161,7 +182,7 @@ Top-level: sorm
                   primary key of the object.
             \item @type [String, Required] The Java type of the linked object.
             \item @sql-type [String, Optional, Default @key-type] The SQL type
-                  of the key. The name of an enum from
+                  of the key. The name of an enum from\\
                   net.jonp.sorm.codegen.SQLType.
             \item collection[0..1] Describes the linked collection for *ToMany
                   linkages.
@@ -175,9 +196,13 @@ Top-level: sorm
                         \item @dialect [String, Optional, Default ``*''] The
                               name of the dialect for this query.
                         \item (Text) The SQL query used to read the collection.
-                              Must return at least a single column named ``id'',
-                              although any additional columns will be ignored.
-                              Fields may be referenced as ``\%\{fieldName\}''.
+                              May consist of multiple SQL statements separated
+                              by semicolons (``;''). Each statement but the last
+                              will be executed as-is (without any symbol
+                              replacement). The last statement must return at
+                              least a single column named ``id'', although any
+                              additional columns will be ignored. Fields may be
+                              referenced as ``\%\{fieldName\}''.
                     \end{itemize}
                 \end{itemize}
                 \item create[0..1] Only necessary for ManyToMany linkages.
@@ -189,17 +214,19 @@ Top-level: sorm
                         \item @dialect [String, Optional, Default ``*''] The
                               name of the dialect for this statement.
                         \item (Text) The SQL query used to create a new linkage.
-                              Fields on this object may be referenced as
+                              Fields on this object may be referenced as\\
                               ``\%\{1.fieldName\}'', and fields on the object
-                              being linked to this object may be referenced as
+                              being linked to this object may be referenced as\\
                               ``\%\{2.getFunction():[nullable ]type\}'', where
                               the type is the name of one of the enum constants
+                              \\
                               in net.jonp.sorm.codegen.SQLType, and the presense
                               of the ``nullable'' keyword indicates that the
                               getter may return null and the column may be null.
                               For example, ``\%\{2.getId():Integer\}'' will use
                               the Integer function ``getId()'' on the linked
-                              object when building the statement.
+                              object when building the statement. Otherwise,
+                              follows the same rules as ``r'' described above.
                     \end{itemize}
                 \end{itemize}
                 \item delete[0..1] Only necessary for ManyToMany linkages.
@@ -216,6 +243,8 @@ Top-level: sorm
                               object may be referenced as
                               ``\%\{2.getFunction():[nullable ]type\}''. See
                               the create element above for how this works.
+                              Otherwise, follows the same rules as ``r''
+                              described above.
                     \end{itemize}
                 \end{itemize}
             \end{enumerate}
@@ -230,7 +259,8 @@ Top-level: sorm
                   dialect for this statement.
             \item (Text) The SQL query used to insert the object into the
                   database. Fields may be referenced as ``\%\{fieldName\}'', but
-                  remember that the ID has not been set yet.
+                  remember that the ID has not been set yet. Otherwise, follows
+                  the same rules as ``r'' described above.
         \end{enumerate}
     \end{enumerate}
     \item pk[0..1] Describes how to retrieve the ID of the last object inserted
@@ -244,7 +274,7 @@ Top-level: sorm
                   Must return at least one column named ``id''; other columns
                   will be ignored. Fields may be referenced as
                   ``\%\{fieldName\}'', but remember that the ID has not been set
-                  yet.
+                  yet. Otherwise, follows the same rules as ``r'' described above.
         \end{enumerate}
     \end{enumerate}
     \item read[0..1] Describes how to read an object out of the database, given
@@ -257,7 +287,8 @@ Top-level: sorm
             \item (Text) The SQL query used to retrieve the object. Must return
                   one column for each field defined for the object, named by the
                   ``sql-column'' parameter for that field. The key value may be
-                  referenced by ``\%\{\}'' in the SQL query.
+                  referenced by ``\%\{\}'' in the SQL query. Otherwise, follows
+                  the same rules as ``r'' described above.
         \end{enumerate}
     \end{enumerate}
     \item update[0..1] Describes how to update an object in the database.
@@ -267,7 +298,8 @@ Top-level: sorm
             \item @dialect [String, Optional, Default ``*''] The name of the
                   dialect for this statement.
             \item (Text) The SQL statement used to update the given object.
-                  Fields may be referenced as ``\%\{fieldName\}''.
+                  Fields may be referenced as ``\%\{fieldName\}''. Otherwise,
+                  follows the same rules as ``r'' described above.
         \end{enumerate}
     \end{enumerate}
     \item delete[0..1] Describe how to delete an object in the database.
@@ -277,7 +309,8 @@ Top-level: sorm
             \item @dialect [String, Optional, Default ``*''] The name of the
               dialect for this query.
             \item (Text) The SQL statement used to delete the given object.
-                  Fields may be referenced as ``\%\{fieldName\}''.
+                  Fields may be referenced as ``\%\{fieldName\}''. Otherwise,
+                  follows the same rules as ``r'' described above.
         \end{enumerate}
     \end{enumerate}
     \item query[0..*] Describes named queries on the database. These each emit
@@ -290,7 +323,6 @@ Top-level: sorm
         \item param[0..*] Descriptions of the parameters of the function that
               implements this query.
         \begin{enumerate}
-            \item @type The Java type of this parameter.
             \item @name The name of this parameter.
             \item @sql-type The SQL type of this parameter.
             \item set[0..1] Describes how to convert the Java parameter to the
@@ -299,7 +331,7 @@ Top-level: sorm
                 \item (Text) How to convert the Java parameter to the SQL value.
                       The parameter may be referenced as ``\%\{\}''. For
                       example, an input parameter of java.util.Date could be
-                      converted to a SQL value of java.sql.Timestamp with
+                      converted to a SQL value of java.sql.Timestamp with\\
                       ``new java.sql.Timestamp(\%\{\}.getTime())''.
             \end{enumerate}
         \end{enumerate}
@@ -309,8 +341,9 @@ Top-level: sorm
                   dialect for this query.
             \item (Text) The query to retrieve keys matching the parameters.
                   Parameters may be referenced as ``\%\{parameterName\}''. Must
-                  return at least a column named ``id''. Other returned will be
-                  ignored.
+                  return at least a column named ``id''. Other returned columns
+                  will be ignored. Otherwise, follows the same rules as ``r''
+                  described above.
         \end{enumerate}
     \end{enumerate}
 \end{enumerate}
