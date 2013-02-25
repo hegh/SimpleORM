@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>net.jonp</groupId>
+    <groupId>net.jonp.sorm</groupId>
     <artifactId>sorm</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>../</relativePath>
@@ -44,7 +44,7 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>net.jonp</groupId>
+        <groupId>net.jonp.sorm</groupId>
         <artifactId>sorm-maven-plugin</artifactId>
         <executions>
           <execution>
