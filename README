@@ -36,6 +36,31 @@ an output Java source file from the XML. With no arguments, it reads from stdin
 and writes to stdout, but you can get usage information by providing the
 argument '-h'.
 
+If you use Maven, you can easily integrate Sorm code generation by first
+running a `mvn install` from sorm_mojo, and then including this block in the
+dependencies section of your pom.xml:
+    <dependency>
+        <groupId>net.jonp.sorm</groupId>
+        <artifactId>sorm_lib</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </dependency>
+
+and this block in the build/plugins section:
+    <plugin>
+        <groupId>net.jonp.sorm</groupId>
+        <artifactId>sorm-maven-plugin</artifactId>
+        <executions>
+            <execution>
+                <goals>
+                    <goal>sorm</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+
+Although you might want to verify the version number, in case I forgot to update
+this file...
+
 The entire library is in the single project sorm_lib.
 
 Using Eclipse:
